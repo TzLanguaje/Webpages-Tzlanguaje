@@ -622,7 +622,7 @@ function LanguageReference() {
       <div className="container">
         <h2 id="lenguaje-title">Referencia del lenguaje</h2>
         <div className="language-grid">
-          {sections.map((section, i) => (
+          {sections.map((section, _i) => (
             <div key={section.id} className="lang-card">
               <h3>{section.title}</h3>
               <div className="lang-content">
@@ -834,8 +834,8 @@ function Footer() {
 function App() {
   useEffect(() => {
     // Tab handling
-    const tabButtons = document.querySelectorAll('.tab-btn')
-    const tabPanels = document.querySelectorAll('.tab-panel')
+    const tabButtons = document.querySelectorAll('.tab-btn') as NodeListOf<HTMLElement>
+    const tabPanels = document.querySelectorAll('.tab-panel') as NodeListOf<HTMLElement>
     
     tabButtons.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -852,7 +852,7 @@ function App() {
         
         btn.classList.add('active')
         btn.setAttribute('aria-selected', 'true')
-        const panel = document.getElementById('tab-' + target)
+        const panel = document.getElementById('tab-' + target) as HTMLElement | null
         panel?.classList.add('active')
         if (panel) panel.hidden = false
       })
