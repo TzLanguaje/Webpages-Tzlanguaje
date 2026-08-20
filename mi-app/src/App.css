@@ -214,6 +214,10 @@ tr:hover td {
   margin-left: auto;
 }
 
+.nav-links > li {
+  position: relative;
+}
+
 .nav-links a {
   padding: 0.5rem 0.85rem;
   border-radius: var(--radius);
@@ -226,6 +230,90 @@ tr:hover td {
 .nav-links a:hover {
   color: var(--text-h);
   background: var(--bg-card);
+}
+
+/* Dropdown styles */
+.nav-dropdown {
+  position: relative;
+}
+
+.nav-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.nav-dropdown-trigger:hover {
+  color: var(--text-h);
+  background: var(--bg-card);
+}
+
+.nav-dropdown-trigger.open {
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.dropdown-arrow {
+  transition: transform var(--transition);
+  flex-shrink: 0;
+}
+
+.nav-dropdown-trigger.open .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.nav-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  min-width: 200px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  list-style: none;
+  padding: 0.5rem;
+  z-index: 100;
+  animation: dropdown-in 0.15s ease-out;
+}
+
+@keyframes dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.nav-dropdown-menu li {
+  margin: 0;
+}
+
+.nav-dropdown-menu a {
+  display: block;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  color: var(--text);
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.nav-dropdown-menu a:hover {
+  background: var(--accent-bg);
+  color: var(--accent);
 }
 
 .nav-toggle {
@@ -341,15 +429,176 @@ tr:hover td {
   flex-wrap: wrap;
 }
 
-.hero-code {
-  max-width: 600px;
+.hero-code-animated {
+  max-width: 700px;
   margin: 0 auto;
-  text-align: left;
+  width: 100%;
 }
 
-.hero-code pre {
-  background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
+.animated-code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+  background: var(--bg-card);
   border: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
+  border-bottom: none;
+}
+
+.code-badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--accent);
+  background: var(--accent-bg);
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.code-dots {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.code-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.code-dots span:nth-child(1) { background: #ff5f57; }
+.code-dots span:nth-child(2) { background: #ffbd2e; }
+.code-dots span:nth-child(3) { background: #28ca42; }
+
+.animated-code-block {
+  margin: 0;
+  padding: 1rem;
+  background: #0d1117;
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  overflow-x: auto;
+  min-height: 200px;
+}
+
+.animated-code-block code {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.code-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.1rem 0;
+}
+
+.line-number {
+  color: var(--text-muted);
+  opacity: 0.5;
+  user-select: none;
+  min-width: 2rem;
+  text-align: right;
+  font-size: 0.8rem;
+}
+
+.line-content {
+  flex: 1;
+  word-break: break-word;
+}
+
+.cursor-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.1rem 0;
+}
+
+.cursor {
+  display: inline-block;
+  width: 8px;
+  height: 1.2em;
+  background: var(--accent);
+  animation: cursor-blink 1s step-end infinite;
+  vertical-align: text-bottom;
+  margin-left: 2px;
+}
+
+@keyframes cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.examples-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0 0.5rem;
+}
+
+.indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  transition: all var(--transition);
+  padding: 0;
+}
+
+.indicator-dot:hover {
+  border-color: var(--accent);
+  transform: scale(1.2);
+}
+
+.indicator-dot.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.15);
+}
+
+.indicator-dot:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Syntax highlighting for animated code */
+.animated-code-block .keyword { color: #ff79c6; }
+.animated-code-block .string { color: #f1fa8c; }
+.animated-code-block .comment { color: #6272a4; font-style: italic; }
+.animated-code-block .function { color: #50fa7b; }
+.animated-code-block .variable { color: #8be9fd; }
+.animated-code-block .number { color: #bd93f9; }
+.animated-code-block .operator { color: #ff79c6; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero-code-animated {
+    max-width: 100%;
+  }
+  
+  .animated-code-block {
+    font-size: 0.75rem;
+    padding: 0.75rem;
+    min-height: 180px;
+  }
+  
+  .line-number {
+    min-width: 1.5rem;
+    font-size: 0.7rem;
+  }
+  
+  .code-badge {
+    font-size: 0.7rem;
+  }
 }
 
 /* Components Grid */
@@ -685,7 +934,34 @@ tr:hover td {
     text-align: center;
     padding: 0.75rem 1rem;
   }
-  
+
+  .nav-dropdown {
+    width: 100%;
+  }
+
+  .nav-dropdown-trigger {
+    width: 100%;
+    justify-content: space-between;
+    text-align: left;
+    padding: 0.75rem 1rem;
+  }
+
+  .nav-dropdown-menu {
+    position: static;
+    box-shadow: none;
+    border: none;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 0.5rem 0 0.5rem 1rem;
+    margin-top: 0.25rem;
+    animation: none;
+  }
+
+  .nav-dropdown-menu a {
+    padding: 0.5rem 0;
+    font-size: 0.9rem;
+  }
+
   .btn-github {
     width: 100%;
     justify-content: center;

@@ -1,8 +1,5 @@
-import { useEffect } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import './App.css'
-
-const CODE_HERO = `imprimir "Hola desde TzLang"
-// Hola desde TzLang`
 
 const CODE_COMPARISON = `variable edad = 20
 
@@ -233,6 +230,213 @@ imprimir desconocida
 // Error: variable 'desconocida' no existe.
 // La ejecucion fallo.`
 
+// Animated hero code examples - each is a short snippet showing a feature
+const HERO_EXAMPLES = [
+  {
+    label: 'Variables y tipos',
+    code: `variable nombre = "Ana"
+variable edad = 20
+variable activo = verdadero
+imprimir tipo(edad)  // numero`
+  },
+  {
+    label: 'Condicionales en español',
+    code: `variable nota = 85
+
+si nota es mayor o igual que 90
+    imprimir "Sobresaliente"
+sino
+    imprimir "Aprobado"
+fin`
+  },
+  {
+    label: 'Bucles y listas',
+    code: `variable frutas = ["manzana", "pera", "uva"]
+
+para cada fruta en frutas
+    imprimir fruta
+fin`
+  },
+  {
+    label: 'Funciones y recursión',
+    code: `funcion factorial(n)
+    si n es menor o igual que 1
+        retornar 1
+    fin
+    retornar n * factorial(n - 1)
+fin
+
+imprimir factorial(5)  // 120`
+  },
+  {
+    label: 'Diccionarios anidados',
+    code: `variable estudiante = {
+    "nombre": "Carlos",
+    "notas": [90, 85, 95]
+}
+
+imprimir estudiante["notas"][0]  // 90`
+  },
+  {
+    label: 'Operadores lógicos',
+    code: `variable edad = 20
+variable tiene_doc = verdadero
+
+si (edad >= 18) y (tiene_doc)
+    imprimir "Puede entrar"
+fin`
+  },
+  {
+    label: 'Copia profunda',
+    code: `variable a = {"x": 1}
+variable b = a
+b["x"] = 99
+
+imprimir a["x"]  // 1
+imprimir b["x"]  // 99`
+  },
+  {
+    label: 'Funciones built-in',
+    code: `imprimir largo("Hola")      // 4
+imprimir mayusculas("hola")  // HOLA
+imprimir unir([1,2,3], "-")  // 1-2-3`
+  }
+]
+
+// Animated Hero Code Component
+function HeroCodeAnimated() {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [displayLines, setDisplayLines] = useState<string[]>([])
+  const [showCursor, setShowCursor] = useState(true)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const lineIndexRef = useRef(0)
+  const charIndexRef = useRef(0)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const currentExample = HERO_EXAMPLES[currentIndex]
+  const codeLines = useMemo(() => HERO_EXAMPLES[currentIndex].code.split('\n'), [currentIndex])
+
+  // Blinking cursor
+  useEffect(() => {
+    intervalRef.current = setInterval(() => setShowCursor(prev => !prev), 530)
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
+  }, [])
+
+  // Typing animation logic
+  useEffect(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+
+    const typeNext = () => {
+      if (isDeleting) {
+        // Deleting: remove last character
+        if (charIndexRef.current > 0) {
+          charIndexRef.current--
+          setDisplayLines(prev => {
+            const newLines = [...prev]
+            const currentLine = lineIndexRef.current
+            newLines[currentLine] = codeLines[currentLine].slice(0, charIndexRef.current)
+            return newLines
+          })
+          timeoutRef.current = window.setTimeout(typeNext, 30)
+        } else if (lineIndexRef.current > 0) {
+          // Move to previous line
+          lineIndexRef.current--
+          charIndexRef.current = codeLines[lineIndexRef.current].length
+          setDisplayLines(prev => prev.slice(0, -1))
+          timeoutRef.current = window.setTimeout(typeNext, 30)
+        } else {
+          // Finished deleting, switch to next example
+          setIsDeleting(false)
+          setCurrentIndex(prev => (prev + 1) % HERO_EXAMPLES.length)
+          lineIndexRef.current = 0
+          charIndexRef.current = 0
+          setDisplayLines([])
+          timeoutRef.current = window.setTimeout(typeNext, 400)
+        }
+      } else {
+        // Typing: add next character
+        if (lineIndexRef.current < codeLines.length) {
+          const currentLine = codeLines[lineIndexRef.current]
+          if (charIndexRef.current < currentLine.length) {
+            charIndexRef.current++
+            setDisplayLines(prev => {
+              const newLines = [...prev]
+              newLines[lineIndexRef.current] = currentLine.slice(0, charIndexRef.current)
+              return newLines
+            })
+            timeoutRef.current = window.setTimeout(typeNext, 25)
+          } else {
+            // Line complete, move to next line
+            lineIndexRef.current++
+            charIndexRef.current = 0
+            if (lineIndexRef.current < codeLines.length) {
+              setDisplayLines(prev => [...prev, ''])
+            }
+            timeoutRef.current = window.setTimeout(typeNext, 150)
+          }
+        } else {
+          // All lines typed, wait then start deleting
+          timeoutRef.current = window.setTimeout(() => {
+            setIsDeleting(true)
+            typeNext()
+          }, 2500)
+        }
+      }
+    }
+    
+    typeNext()
+
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    }
+  }, [currentIndex, codeLines, isDeleting])
+
+  return (
+    <div className="hero-code-animated" role="region" aria-label="Ejemplos de código TzLang">
+      <div className="animated-code-header">
+        <span className="code-badge">{currentExample.label}</span>
+        <div className="code-dots" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+      <pre className="animated-code-block"><code>
+        {displayLines.map((line, i) => (
+          <div key={i} className="code-line">
+            <span className="line-number">{i + 1}</span>
+            <span className="line-content">{line || ' '}</span>
+          </div>
+        ))}
+        {!isDeleting && displayLines.length > 0 && (
+          <div className="code-line cursor-line">
+            <span className="line-number">{displayLines.length}</span>
+            <span className="line-content">
+              {showCursor && <span className="cursor" aria-hidden="true">▋</span>}
+            </span>
+          </div>
+        )}
+      </code></pre>
+      <div className="examples-indicator" aria-label="Ejemplo {currentIndex + 1} de {HERO_EXAMPLES.length}">
+        {HERO_EXAMPLES.map((_, i) => (
+          <button
+            key={i}
+            className={`indicator-dot ${i === currentIndex ? 'active' : ''}`}
+            onClick={() => {
+              setCurrentIndex(i)
+              lineIndexRef.current = 0
+              charIndexRef.current = 0
+              setDisplayLines([])
+              setIsDeleting(false)
+            }}
+            aria-label={`Ver ejemplo ${i + 1}: ${HERO_EXAMPLES[i].label}`}
+            aria-current={i === currentIndex ? 'true' : 'false'}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 const CODE_PROJECT = `TzLang/
 ├── src/
 │   ├── lexer/          lexer.c / lexer.h
@@ -291,19 +495,49 @@ Failed: 0
 
 All education tests passed.`
 
-const navItems = [
-  { id: 'inicio', label: 'Inicio' },
-  { id: 'que-es', label: 'Qué es TzLang' },
-  { id: 'sintaxis', label: 'Sintaxis' },
-  { id: 'ejemplos', label: 'Ejemplos' },
-  { id: 'instalacion', label: 'Instalación' },
-  { id: 'lenguaje', label: 'Referencia' },
-  { id: 'arquitectura', label: 'Arquitectura' },
-  { id: 'desarrollo', label: 'Desarrollo' },
-  { id: 'roadmap', label: 'Roadmap' },
+const navGroups = [
+  {
+    label: 'Lenguaje',
+    items: [
+      { id: 'que-es', label: 'Qué es TzLang' },
+      { id: 'sintaxis', label: 'Sintaxis en español' },
+      { id: 'ejemplos', label: 'Ejemplos' },
+      { id: 'lenguaje', label: 'Referencia completa' },
+    ]
+  },
+  {
+    label: 'Empezar',
+    items: [
+      { id: 'instalacion', label: 'Instalación' },
+    ]
+  },
+  {
+    label: 'Desarrollo',
+    items: [
+      { id: 'arquitectura', label: 'Arquitectura' },
+      { id: 'desarrollo', label: 'Comandos y tests' },
+      { id: 'roadmap', label: 'Roadmap' },
+    ]
+  },
 ]
 
 function Header() {
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+
+  const handleDropdownClick = (label: string) => {
+    setOpenDropdown(prev => prev === label ? null : label)
+  }
+
+  const handleItemClick = () => {
+    setOpenDropdown(null)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent, _label: string) => {
+    if (e.key === 'Escape') {
+      setOpenDropdown(null)
+    }
+  }
+
   return (
     <header className="header">
       <nav className="nav container" role="navigation" aria-label="Navegación principal">
@@ -319,9 +553,39 @@ function Header() {
           </svg>
         </button>
         <ul className="nav-links" id="nav-menu" role="menubar">
-          {navItems.map(item => (
-            <li key={item.id} role="none">
-              <a href={'#' + item.id} role="menuitem">{item.label}</a>
+          <li role="none">
+            <a href="#inicio" role="menuitem">Inicio</a>
+          </li>
+          {navGroups.map((group) => (
+            <li key={group.label} className="nav-dropdown" role="none">
+              <button
+                className={`nav-dropdown-trigger ${openDropdown === group.label ? 'open' : ''}`}
+                onClick={() => handleDropdownClick(group.label)}
+                onKeyDown={(e) => handleKeyDown(e, group.label)}
+                aria-expanded={openDropdown === group.label}
+                aria-haspopup="true"
+                role="menuitem"
+              >
+                {group.label}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" className="dropdown-arrow">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              {openDropdown === group.label && (
+                <ul className="nav-dropdown-menu" role="menu">
+                  {group.items.map(item => (
+                    <li key={item.id} role="none">
+                      <a
+                        href={'#' + item.id}
+                        role="menuitem"
+                        onClick={handleItemClick}
+                      >
+                        {item.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </li>
           ))}
         </ul>
@@ -358,9 +622,7 @@ function Hero() {
             <a href="#instalacion" className="btn btn-primary">Empezar ahora</a>
             <a href="#ejemplos" className="btn btn-secondary">Ver ejemplos</a>
           </div>
-          <div className="hero-code">
-            <pre><code>{CODE_HERO}</code></pre>
-          </div>
+          <HeroCodeAnimated />
         </div>
       </div>
     </section>

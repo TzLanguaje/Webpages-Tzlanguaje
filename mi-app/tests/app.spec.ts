@@ -23,33 +23,44 @@ test.describe('TzLang Landing Page', () => {
   })
 
   test('should have navigation with all sections', async ({ page }) => {
-    const navLinks = page.locator('.nav-links a')
-    await expect(navLinks).toHaveCount(9)
+    // Check main nav items (Inicio + 3 dropdown triggers)
+    const navTriggers = page.locator('.nav-links > li > a, .nav-links > li > button.nav-dropdown-trigger')
+    await expect(navTriggers).toHaveCount(4) // Inicio + 3 dropdown groups
     
+    // Check dropdown content by opening each
     const expectedSections = [
       'Inicio',
-      'Qué es TzLang',
-      'Sintaxis',
-      'Ejemplos',
-      'Instalación',
-      'Referencia',
-      'Arquitectura',
-      'Desarrollo',
-      'Roadmap'
+      'Lenguaje', 'Qué es TzLang', 'Sintaxis en español', 'Ejemplos', 'Referencia completa',
+      'Empezar', 'Instalación',
+      'Desarrollo', 'Arquitectura', 'Comandos y tests', 'Roadmap'
     ]
     
     for (const section of expectedSections) {
-      await expect(navLinks.filter({ hasText: section })).toBeVisible()
+      // For dropdown items, we need to open the dropdown first
+      if (['Qué es TzLang', 'Sintaxis en español', 'Ejemplos', 'Referencia completa'].includes(section)) {
+        await page.click('.nav-dropdown-trigger:has-text("Lenguaje")')
+      } else if (['Instalación'].includes(section)) {
+        await page.click('.nav-dropdown-trigger:has-text("Empezar")')
+      } else if (['Arquitectura', 'Comandos y tests', 'Roadmap'].includes(section)) {
+        await page.click('.nav-dropdown-trigger:has-text("Desarrollo")')
+      }
+      
+      const link = page.locator('.nav-links a, .nav-dropdown-menu a').filter({ hasText: section })
+      await expect(link.first()).toBeVisible()
     }
   })
 
   test('should navigate to sections via anchor links', async ({ page }) => {
+    // Open dropdown and click
+    await page.click('.nav-dropdown-trigger:has-text("Lenguaje")')
     await page.click('a[href="#que-es"]')
     await expect(page.locator('#que-es')).toBeInViewport()
     
+    await page.click('.nav-dropdown-trigger:has-text("Lenguaje")')
     await page.click('a[href="#sintaxis"]')
     await expect(page.locator('#sintaxis')).toBeInViewport()
     
+    await page.click('.nav-dropdown-trigger:has-text("Empezar")')
     await page.click('a[href="#instalacion"]')
     await expect(page.locator('#instalacion')).toBeInViewport()
   })
@@ -153,12 +164,21 @@ test.describe('TzLang Landing Page', () => {
     await expect(githubLink).toHaveAttribute('href', 'https://github.com/tzerk-last/TzLanguaje')
   })
 
-  test('should have code examples with syntax highlighting', async ({ page }) => {
+  test('should have animated code examples in hero', async ({ page }) => {
     const codeBlocks = page.locator('pre code')
     await expect(codeBlocks.first()).toBeVisible()
     
-    const heroCode = page.locator('.hero-code pre code')
-    await expect(heroCode).toContainText('imprimir "Hola desde TzLang"')
+    // Check animated hero code component
+    const heroCode = page.locator('.hero-code-animated')
+    await expect(heroCode).toBeVisible()
+    
+    // Should have the code badge with example label
+    const badge = heroCode.locator('.code-badge')
+    await expect(badge).toBeVisible()
+    
+    // Should have indicator dots for navigating examples
+    const indicators = heroCode.locator('.indicator-dot')
+    await expect(indicators).toHaveCount(8)
   })
 
 test('should be responsive on mobile', async ({ page }) => {
