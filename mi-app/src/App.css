@@ -1007,6 +1007,24 @@ tr:hover td {
   font-weight: 500;
 }
 
+.footer-signature {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.footer-signature a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.footer-signature a:hover {
+  text-decoration: underline;
+}
+
 /* Checklist */
 .checklist {
   list-style: none;

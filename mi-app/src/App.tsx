@@ -596,6 +596,7 @@ function Footer() {
       <div className="container">
         <p>TzLang • Lenguaje de programación educativo en español</p>
         <p>Construido en C11 • Licencia MIT</p>
+        <p className="footer-signature">Hecho por <a href="https://github.com/Mk1-mid" target="_blank" rel="noopener noreferrer">Mk1-mid</a></p>
         <a href="https://github.com/TzLanguaje/TzLanguaje" target="_blank" rel="noopener noreferrer">
           Ver en GitHub
         </a>
