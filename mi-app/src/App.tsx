@@ -656,15 +656,6 @@ function ComparisonTable() {
   )
 }
 
-function LangCard({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="lang-card">
-      <h3>{title}</h3>
-      <div className="lang-content">{children}</div>
-    </div>
-  )
-}
-
 function Pipeline() {
   const steps = [
     { name: 'archivo .tz', highlighted: false, desc: null },
@@ -1417,46 +1408,111 @@ function SintaxisPage() {
         <div className="container">
           <SectionTitle id="lenguaje-title" title="Referencia del lenguaje" />
           
-          <div className="language-grid">
-            <LangCard title="Variables">
-              <CodeBlock code={CODE_VARIABLES} />
-            </LangCard>
-            <LangCard title="Tipos de datos">
-              <CodeBlock code={CODE_TIPOS} />
-            </LangCard>
-            <LangCard title="Secuencias de escape">
-              <CodeBlock code={CODE_ESCAPES} />
-            </LangCard>
-            <LangCard title="Operadores aritméticos">
-              <CodeBlock code={CODE_OPERADORES} />
-            </LangCard>
-            <LangCard title="Condicionales">
-              <CodeBlock code={CODE_CONDICIONALES} />
-            </LangCard>
-            <LangCard title="Bucles">
-              <CodeBlock code={CODE_BUCLES} />
-            </LangCard>
-            <LangCard title="Romper y continuar">
-              <CodeBlock code={CODE_BREAK_CONTINUE} />
-            </LangCard>
-            <LangCard title="Funciones">
-              <CodeBlock code={CODE_FUNCIONES} />
-            </LangCard>
-            <LangCard title="Listas">
-              <CodeBlock code={CODE_LISTAS} />
-            </LangCard>
-            <LangCard title="Diccionarios">
-              <CodeBlock code={CODE_DICCIONARIOS} />
-            </LangCard>
-            <LangCard title="Copia profunda">
-              <CodeBlock code={CODE_COPIA} />
-            </LangCard>
-            <LangCard title="Entrada del usuario">
-              <CodeBlock code={CODE_ENTRADA} />
-            </LangCard>
-            <LangCard title="Errores">
-              <CodeBlock code={CODE_ERRORS} />
-            </LangCard>
+          <div className="reference-list">
+            <article className="reference-item">
+              <header className="reference-header">
+                <h3>Variables</h3>
+              </header>
+              <div className="reference-content">
+                <CodeBlock code={CODE_VARIABLES} />
+              </div>
+            </article>
+            <article className="reference-item">
+              <header className="reference-header">
+                <h3>Tipos de datos</h3>
+              </header>
+              <div className="reference-content">
+                <CodeBlock code={CODE_TIPOS} />
+              </div>
+            </article>
+            <article className="reference-item">
+              <header className="reference-header">
+                <h3>Secuencias de escape</h3>
+              </header>
+              <div className="reference-content">
+                <CodeBlock code={CODE_ESCAPES} />
+              </div>
+            </article>
+            <article className="reference-item">
+              <header className="reference-header">
+                <h3>Operadores aritméticos</h3>
+              </header>
+              <div className="reference-content">
+                <CodeBlock code={CODE_OPERADORES} />
+              </div>
+            </article>
+            <article className="reference-item">
+              <header className="reference-header">
+                <h3>Condicionales</h3>
+              </header>
+              <div className="reference-content">
+                <CodeBlock code={CODE_CONDICIONALES} />
+              </div>
+            </article>
+            <article className="reference-item">
+              <header className="reference-header">
+                <h3>Bucles</h3>
+              </header>
+              <div className="reference-content">
+                <CodeBlock code={CODE_BUCLES} />
+              </div>
+            </article>
+            <article className="reference-item">
+              <header className="reference-header">
+                <h3>Romper y continuar</h3>
+              </header>
+              <div className="reference-content">
+                <CodeBlock code={CODE_BREAK_CONTINUE} />
+              </div>
+            </article>
+            <article className="reference-item">
+              <header className="reference-header">
+                <h3>Funciones</h3>
+              </header>
+              <div className="reference-content">
+                <CodeBlock code={CODE_FUNCIONES} />
+              </div>
+            </article>
+            <article className="reference-item">
+              <header className="reference-header">
+                <h3>Listas</h3>
+              </header>
+              <div className="reference-content">
+                <CodeBlock code={CODE_LISTAS} />
+              </div>
+            </article>
+            <article className="reference-item">
+              <header className="reference-header">
+                <h3>Diccionarios</h3>
+              </header>
+              <div className="reference-content">
+                <CodeBlock code={CODE_DICCIONARIOS} />
+              </div>
+            </article>
+            <article className="reference-item">
+              <header className="reference-header">
+                <h3>Copia profunda</h3>
+              </header>
+              <div className="reference-content">
+                <CodeBlock code={CODE_COPIA} />
+              </div>
+            </article>
+            <article className="reference-item">
+              <header className="reference-header">
+                <h3>Entrada del usuario</h3>
+              </header>
+              <div className="reference-content">
+                <CodeBlock code={CODE_ENTRADA} />
+              </div>
+            </article>
+            <article className="reference-item">
+              <header className="reference-header">
+                <h3>Errores</h3>
+              </header>
+              <div className="reference-content">
+                <CodeBlock code={CODE_ERRORS} />
+              </div>
+            </article>
           </div>
         </div>
       </section>

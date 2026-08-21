@@ -149,9 +149,9 @@ await expect(macLink).toHaveAttribute('href', 'https://github.com/TzLanguaje/TzL
       await expect(page).toHaveTitle(/TzLang/)
     })
 
-    test('should have language reference with 13 cards', async ({ page }) => {
-      const cards = page.locator('.lang-card')
-      await expect(cards).toHaveCount(13)
+    test('should have language reference with 13 items', async ({ page }) => {
+      const items = page.locator('.reference-item')
+      await expect(items).toHaveCount(13)
       
       const titles = [
         'Variables', 'Tipos de datos', 'Secuencias de escape', 'Operadores aritméticos',
@@ -161,7 +161,7 @@ await expect(macLink).toHaveAttribute('href', 'https://github.com/TzLanguaje/TzL
       ]
       
       for (const title of titles) {
-        await expect(cards.filter({ hasText: title }).first()).toBeVisible()
+        await expect(items.filter({ hasText: title }).first()).toBeVisible()
       }
     })
 
