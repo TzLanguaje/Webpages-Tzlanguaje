@@ -7,7 +7,7 @@ mi-app/coverage/
 mi-app/tests/
 mi-app/playwright.config.ts
 mi-app/.oxlintrc.json
-mi-app/tsconfig*.json
+# mi-app/tsconfig*.json - necesario para build
 mi-app/vite.config.ts
 mi-app/vite.config.js
 mi-app/.vscode/
