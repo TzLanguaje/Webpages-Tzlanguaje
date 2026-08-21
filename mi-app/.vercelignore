@@ -21,8 +21,8 @@ playwright.config.js
 # tsconfig.json - necesario para build
 # tsconfig.app.json - necesario para build
 # tsconfig.node.json - necesario para build
-vite.config.ts
-vite.config.js
+# vite.config.ts - necesario para tsconfig.node.json include
+# vite.config.js - necesario para build
 
 # IDE / Editor
 .vscode/
