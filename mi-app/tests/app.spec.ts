@@ -92,9 +92,14 @@ await expect(macLink).toHaveAttribute('href', 'https://github.com/TzLanguaje/TzL
       const footer = page.locator('footer')
       await expect(footer).toBeVisible()
       
-      const githubLink = footer.locator('a[href*="github.com"]')
+      // Check the TzLanguaje GitHub link (the main repo link)
+      const githubLink = footer.locator('a[href="https://github.com/TzLanguaje/TzLanguaje"]')
       await expect(githubLink).toBeVisible()
       await expect(githubLink).toHaveAttribute('href', 'https://github.com/TzLanguaje/TzLanguaje')
+      
+      // Also verify the Mk1-mid link exists
+      const mk1Link = footer.locator('a[href="https://github.com/Mk1-mid"]')
+      await expect(mk1Link).toBeVisible()
     })
   })
 
