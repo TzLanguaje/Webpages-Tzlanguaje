@@ -18,9 +18,9 @@ playwright.config.js
 
 # Config files (no necesarios en producción)
 .oxlintrc.json
-tsconfig.json
-tsconfig.app.json
-tsconfig.node.json
+# tsconfig.json - necesario para build
+# tsconfig.app.json - necesario para build
+# tsconfig.node.json - necesario para build
 vite.config.ts
 vite.config.js
 
