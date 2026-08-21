@@ -1,0 +1,17 @@
+# Vercel ignore - en la raíz del repo (por si acaso)
+mi-app/node_modules/
+mi-app/dist/
+mi-app/playwright-report/
+mi-app/test-results/
+mi-app/coverage/
+mi-app/tests/
+mi-app/playwright.config.ts
+mi-app/.oxlintrc.json
+mi-app/tsconfig*.json
+mi-app/vite.config.ts
+mi-app/vite.config.js
+mi-app/.vscode/
+mi-app/.idea/
+mi-app/*.log
+mi-app/README.md
+mi-app/LICENSE
