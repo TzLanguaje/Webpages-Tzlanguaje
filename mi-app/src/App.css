@@ -154,6 +154,7 @@ pre code {
   color: var(--text-muted);
   margin: 0.5rem 0 1.5rem;
   max-width: 700px;
+  text-align: center;
 }
 
 h1, h2, h3, h4 {
