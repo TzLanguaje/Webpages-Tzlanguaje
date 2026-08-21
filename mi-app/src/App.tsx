@@ -1,5 +1,17 @@
-import { useEffect, useState, useRef, useMemo } from 'react'
+import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom'
+import { useEffect, useState, useRef } from 'react'
 import './App.css'
+
+// ============================================
+// SHARED CONSTANTS & COMPONENTS
+// ============================================
+
+const navItems = [
+  { path: '/', label: 'Inicio' },
+  { path: '/que-es', label: 'Qué es TzLang' },
+  { path: '/sintaxis', label: 'Sintaxis' },
+  { path: '/desarrollo', label: 'Desarrollo' },
+]
 
 const CODE_COMPARISON = `variable edad = 20
 
@@ -39,6 +51,9 @@ funcion clasificar(nota)
     si nota es mayor o igual que 70
         retornar "Aprobado"
     fin
+    si nota es mayor o igual que 50
+        retornar "Justo"
+    fin
     retornar "Suspenso"
 fin
 
@@ -68,38 +83,8 @@ imprimir "Aprobados: " + texto(aprobados) + " de " + texto(largo(estudiantes))
 // Lucia: Suspenso
 // Aprobados: 2 de 3`
 
-const CODE_INSTALL_MACOS = `curl -fsSL https://raw.githubusercontent.com/tzerk-last/TzLanguaje/main/install.sh | sh`
-
-const CODE_INSTALL_MACOS_OPTS = `# Para todo el sistema (necesita sudo)
-TZ_PREFIX=/usr/local sh install.sh
-
-# Una version concreta
-TZ_VERSION=v0.1.0 sh install.sh`
-
-const CODE_INSTALL_WINDOWS = `irm https://raw.githubusercontent.com/tzerk-last/TzLanguaje/main/install.ps1 | iex`
-
-const CODE_INSTALL_PACKAGES = `# Homebrew (macOS/Linux)
-brew install tzerk-last/tzlang/tzlang
-
-# Scoop (Windows)
-scoop bucket add tzlang https://github.com/tzerk-last/scoop-tzlang
-scoop install tzlang`
-
-const CODE_BUILD_CMAKE = `git clone https://github.com/tzerk-last/TzLanguaje.git
-cd TzLanguaje
-cmake -B build-cmake -DCMAKE_BUILD_TYPE=Release
-cmake --build build-cmake`
-
-const CODE_BUILD_MAKE = `make
-./build/tzc examples/hola.tz
-
-# Instalar
-sudo make install
-# o sin sudo:
-make PREFIX=$HOME/.local install`
-
 const CODE_CHECK = `tz --version
-# TzLang 0.1.0`
+# TzLang 0.3.4`
 
 const CODE_VARIABLES = `variable nombre = "Carlos"
 variable edad = 20
@@ -116,10 +101,16 @@ imprimir tipo(nulo)      // nulo
 imprimir tipo([1, 2, 3]) // lista
 imprimir tipo({"a": 1})  // diccionario`
 
+const CODE_ESCAPES = `imprimir "Dice \"hola\""
+imprimir "uno\ndos"
+imprimir "columna1\tcolumna2"
+imprimir "ruta\\archivo"`
+
 const CODE_OPERADORES = `imprimir 7 + 3    // 10
 imprimir 7 - 3    // 4
 imprimir 7 * 3    // 21
 imprimir 7 / 3    // 2 (trunca hacia cero)
+imprimir 7 % 3    // 1 (resto)
 imprimir 7.0 / 2  // 3.5
 imprimir -5       // -5
 imprimir 2 + 3 * 4  // 14
@@ -129,6 +120,10 @@ const CODE_CONDICIONALES = `variable nota = 85
 
 si nota es mayor o igual que 90
     imprimir "Sobresaliente"
+sino si nota es mayor o igual que 70
+    imprimir "Aprobado"
+sino si nota es mayor o igual que 50
+    imprimir "Justo"
 sino
     imprimir "Puede mejorar"
 fin`
@@ -188,6 +183,7 @@ imprimir factorial(5)
 const CODE_LISTAS = `variable numeros = [1, 2, 3]
 
 imprimir numeros[0]      // 1
+imprimir numeros[-1]     // 3 (índice negativo)
 imprimir largo(numeros)  // 3
 
 numeros[1] = 99
@@ -197,8 +193,8 @@ imprimir numeros         // [1, 99, 3, 4]
 eliminar(numeros, 0)
 imprimir numeros         // [99, 3, 4]
 
-variable mixta = [1, "texto", verdadero, nulo, [2, 3]]
-imprimir mixta[4][1]  // 3`
+// Concatenación de listas
+imprimir [1, 2] + [3, 4]  // [1, 2, 3, 4]`
 
 const CODE_DICCIONARIOS = `variable persona = {
     "nombre": "Carlos",
@@ -219,91 +215,198 @@ variable b = a
 
 b["datos"]["edad"] = 99
 
-imprimir a["datos"]["edad"]  // 20
+imprimir a["datos"]["edad"]  // 20 (no cambió)
 imprimir b["datos"]["edad"]  // 99`
 
+const CODE_ENTRADA = `variable nombre = entrada("¿Cómo te llamas? ")
+imprimir "Hola, " + nombre
+
+variable edad = numero(entrada("¿Cuántos años tienes? "))
+imprimir "El año que viene tendrás " + texto(edad + 1)
+// ¿Cómo te llamas? Ana
+// Hola, Ana
+// ¿Cuántos años tienes? 30
+// El año que viene tendrás 31`
+
 const CODE_ERRORS = `imprimir 10 / 0
-// Error: division por cero.
-// La ejecucion fallo.
+// Error: división por cero.
+// La ejecución falló.
 
 imprimir desconocida
 // Error: variable 'desconocida' no existe.
-// La ejecucion fallo.`
+// La ejecución falló.`
 
-// Animated hero code examples - each is a short snippet showing a feature
-const HERO_EXAMPLES = [
+const CODE_PROJECT = `TzLang/
+│
+├── src/
+│   ├── lexer/          lexer.c / lexer.h
+│   ├── parser/         parser.c / parser.h
+│   ├── ast/            ast.c / ast.h
+│   ├── interpreter/    interpreter.c / interpreter.h
+│   ├── runtime/        value.c / operations.c
+│   ├── diagnostic/     notas de diagnóstico por categoría
+│   ├── io/             file.c / console.c
+│   ├── main.c          punto de entrada y CLI
+│   └── version.h       número de versión
+│
+├── examples/           programas de ejemplo
+├── education/          cinco lecciones con salida esperada
+│                       y el prompt generador de ejercicios
+├── docs/
+│   └── language.md     referencia completa del lenguaje
+│
+├── tests/
+│   ├── run_tests.sh              suite principal
+│   └── run_education_tests.sh    suite educativa
+│
+├── .github/workflows/
+│   ├── ci.yml          compila y prueba en los tres sistemas
+│   └── release.yml     publica los binarios al etiquetar
+│
+├── packaging/
+│   ├── macos/          instalador .pkg con asistente
+│   ├── windows/        instalador .exe con asistente (Inno Setup)
+│   ├── linux/          paquetes .deb y .rpm
+│   ├── npm/            paquetes de npm y su lanzador
+│   ├── homebrew/       plantilla de la formula de Homebrew
+│   └── scoop/          plantilla del manifiesto de Scoop
+│
+├── scripts/
+│   └── subir-version.sh
+│
+├── install.sh          instalador para macOS y Linux
+├── install.ps1         instalador para Windows
+│
+├── CMakeLists.txt      build multiplataforma
+├── Makefile            build de desarrollo (Unix)
+├── LICENSE
+└── README.md`
+
+const CODE_TESTS = `make test
+========================================
+Tests:  163
+Passed: 163
+Failed: 0
+========================================
+
+All tests passed.`
+
+const CODE_EDUCATION = `make test-education
+=== TzLang Education Suite ===
+
+[PASS] 01_variables
+[PASS] 02_tipos
+[PASS] 03_control
+[PASS] 04_funciones
+[PASS] 05_estructuras
+
+========================================
+Tests:  5
+Passed: 5
+Failed: 0
+========================================
+
+All education tests passed.`
+
+const HERO_SNIPPETS = [
   {
     label: 'Variables y tipos',
-    code: `variable nombre = "Ana"
-variable edad = 20
-variable activo = verdadero
-imprimir tipo(edad)  // numero`
+    lines: [
+      'variable nombre = "Ana"',
+      'variable edad = 20',
+      'variable activo = verdadero',
+      'imprimir tipo(edad)  // numero'
+    ]
   },
   {
     label: 'Condicionales en español',
-    code: `variable nota = 85
-
-si nota es mayor o igual que 90
-    imprimir "Sobresaliente"
-sino
-    imprimir "Aprobado"
-fin`
+    lines: [
+      'variable nota = 85',
+      '',
+      'si nota es mayor o igual que 90',
+      '    imprimir "Sobresaliente"',
+      'sino si nota es mayor o igual que 70',
+      '    imprimir "Aprobado"',
+      'sino',
+      '    imprimir "Justo"',
+      'fin'
+    ]
   },
   {
     label: 'Bucles y listas',
-    code: `variable frutas = ["manzana", "pera", "uva"]
-
-para cada fruta en frutas
-    imprimir fruta
-fin`
+    lines: [
+      'variable frutas = ["manzana", "pera", "uva"]',
+      '',
+      'para cada fruta en frutas',
+      '    imprimir fruta',
+      'fin',
+      '',
+      '// Índices negativos',
+      'imprimir frutas[-1]  // uva'
+    ]
   },
   {
     label: 'Funciones y recursión',
-    code: `funcion factorial(n)
-    si n es menor o igual que 1
-        retornar 1
-    fin
-    retornar n * factorial(n - 1)
-fin
-
-imprimir factorial(5)  // 120`
+    lines: [
+      'funcion factorial(n)',
+      '    si n es menor o igual que 1',
+      '        retornar 1',
+      '    fin',
+      '    retornar n * factorial(n - 1)',
+      'fin',
+      '',
+      'imprimir factorial(5)  // 120'
+    ]
   },
   {
     label: 'Diccionarios anidados',
-    code: `variable estudiante = {
-    "nombre": "Carlos",
-    "notas": [90, 85, 95]
-}
-
-imprimir estudiante["notas"][0]  // 90`
+    lines: [
+      'variable estudiante = {',
+      '    "nombre": "Carlos",',
+      '    "notas": [90, 85, 95]',
+      '}',
+      '',
+      'imprimir estudiante["notas"][0]  // 90'
+    ]
   },
   {
-    label: 'Operadores lógicos',
-    code: `variable edad = 20
-variable tiene_doc = verdadero
-
-si (edad >= 18) y (tiene_doc)
-    imprimir "Puede entrar"
-fin`
+    label: 'Operador resto (%)',
+    lines: [
+      'imprimir 7 % 3    // 1',
+      'imprimir 10 % 4   // 2',
+      '',
+      '// Útil para par/impar',
+      'si 7 % 2 es igual a 0',
+      '    imprimir "par"',
+      'sino',
+      '    imprimir "impar"',
+      'fin'
+    ]
   },
   {
-    label: 'Copia profunda',
-    code: `variable a = {"x": 1}
-variable b = a
-b["x"] = 99
-
-imprimir a["x"]  // 1
-imprimir b["x"]  // 99`
+    label: 'Entrada del usuario',
+    lines: [
+      'variable nombre = entrada("Nombre: ")',
+      'imprimir "Hola, " + nombre',
+      '',
+      'variable edad = numero(entrada("Edad: "))',
+      'imprimir "El año que viene: " + texto(edad + 1)'
+    ]
   },
   {
-    label: 'Funciones built-in',
-    code: `imprimir largo("Hola")      // 4
-imprimir mayusculas("hola")  // HOLA
-imprimir unir([1,2,3], "-")  // 1-2-3`
+    label: 'Escape en textos',
+    lines: [
+      'imprimir "Dice \"hola\""',
+      'imprimir "uno\ndos\ntres"',
+      'imprimir "col1\tcol2\tcol3"'
+    ]
   }
 ]
 
-// Animated Hero Code Component
+// ============================================
+// ANIMATED HERO CODE COMPONENT (Terminal Style)
+// ============================================
+
 function HeroCodeAnimated() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [displayLines, setDisplayLines] = useState<string[]>([])
@@ -314,8 +417,8 @@ function HeroCodeAnimated() {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const currentExample = HERO_EXAMPLES[currentIndex]
-  const codeLines = useMemo(() => HERO_EXAMPLES[currentIndex].code.split('\n'), [currentIndex])
+  const currentSnippet = HERO_SNIPPETS[currentIndex]
+  const codeLines = currentSnippet.lines
 
   // Blinking cursor
   useEffect(() => {
@@ -323,13 +426,12 @@ function HeroCodeAnimated() {
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
   }, [])
 
-  // Typing animation logic
+  // Typing animation logic - slower for readability
   useEffect(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current)
 
     const typeNext = () => {
       if (isDeleting) {
-        // Deleting: remove last character
         if (charIndexRef.current > 0) {
           charIndexRef.current--
           setDisplayLines(prev => {
@@ -338,24 +440,21 @@ function HeroCodeAnimated() {
             newLines[currentLine] = codeLines[currentLine].slice(0, charIndexRef.current)
             return newLines
           })
-          timeoutRef.current = window.setTimeout(typeNext, 30)
+          timeoutRef.current = window.setTimeout(typeNext, 25)
         } else if (lineIndexRef.current > 0) {
-          // Move to previous line
           lineIndexRef.current--
           charIndexRef.current = codeLines[lineIndexRef.current].length
           setDisplayLines(prev => prev.slice(0, -1))
-          timeoutRef.current = window.setTimeout(typeNext, 30)
+          timeoutRef.current = window.setTimeout(typeNext, 25)
         } else {
-          // Finished deleting, switch to next example
           setIsDeleting(false)
-          setCurrentIndex(prev => (prev + 1) % HERO_EXAMPLES.length)
+          setCurrentIndex(prev => (prev + 1) % HERO_SNIPPETS.length)
           lineIndexRef.current = 0
           charIndexRef.current = 0
           setDisplayLines([])
-          timeoutRef.current = window.setTimeout(typeNext, 400)
+          timeoutRef.current = window.setTimeout(typeNext, 800)
         }
       } else {
-        // Typing: add next character
         if (lineIndexRef.current < codeLines.length) {
           const currentLine = codeLines[lineIndexRef.current]
           if (charIndexRef.current < currentLine.length) {
@@ -365,22 +464,21 @@ function HeroCodeAnimated() {
               newLines[lineIndexRef.current] = currentLine.slice(0, charIndexRef.current)
               return newLines
             })
-            timeoutRef.current = window.setTimeout(typeNext, 25)
+            timeoutRef.current = window.setTimeout(typeNext, 35)
           } else {
-            // Line complete, move to next line
             lineIndexRef.current++
             charIndexRef.current = 0
             if (lineIndexRef.current < codeLines.length) {
               setDisplayLines(prev => [...prev, ''])
             }
-            timeoutRef.current = window.setTimeout(typeNext, 150)
+            timeoutRef.current = window.setTimeout(typeNext, 200)
           }
         } else {
-          // All lines typed, wait then start deleting
+          // All lines typed - wait longer (5 seconds) before deleting
           timeoutRef.current = window.setTimeout(() => {
             setIsDeleting(true)
             typeNext()
-          }, 2500)
+          }, 5000)
         }
       }
     }
@@ -395,7 +493,7 @@ function HeroCodeAnimated() {
   return (
     <div className="hero-code-animated" role="region" aria-label="Ejemplos de código TzLang">
       <div className="animated-code-header">
-        <span className="code-badge">{currentExample.label}</span>
+        <span className="code-badge">{currentSnippet.label}</span>
         <div className="code-dots" aria-hidden="true">
           <span></span><span></span><span></span>
         </div>
@@ -416,8 +514,8 @@ function HeroCodeAnimated() {
           </div>
         )}
       </code></pre>
-      <div className="examples-indicator" aria-label="Ejemplo {currentIndex + 1} de {HERO_EXAMPLES.length}">
-        {HERO_EXAMPLES.map((_, i) => (
+      <div className="examples-indicator" aria-label="Ejemplo {currentIndex + 1} de {HERO_SNIPPETS.length}">
+        {HERO_SNIPPETS.map((_, i) => (
           <button
             key={i}
             className={`indicator-dot ${i === currentIndex ? 'active' : ''}`}
@@ -428,7 +526,7 @@ function HeroCodeAnimated() {
               setDisplayLines([])
               setIsDeleting(false)
             }}
-            aria-label={`Ver ejemplo ${i + 1}: ${HERO_EXAMPLES[i].label}`}
+            aria-label={`Ver ejemplo ${i + 1}: ${HERO_SNIPPETS[i].label}`}
             aria-current={i === currentIndex ? 'true' : 'false'}
           />
         ))}
@@ -437,114 +535,20 @@ function HeroCodeAnimated() {
   )
 }
 
-const CODE_PROJECT = `TzLang/
-├── src/
-│   ├── lexer/          lexer.c / lexer.h
-│   ├── parser/         parser.c / parser.h
-│   ├── ast/            ast.c / ast.h
-│   ├── interpreter/    interpreter.c / interpreter.h
-│   ├── runtime/        value.c / operations.c
-│   ├── io/             file.c / file.h
-│   ├── main.c          punto de entrada y CLI
-│   └── version.h       numero de version
-│
-├── examples/           programas de ejemplo
-├── education/          lecciones con salida esperada
-├── docs/
-│   └── language.md     referencia completa del lenguaje
-│
-├── tests/
-│   ├── run_tests.sh              suite principal
-│   └── run_education_tests.sh    suite educativa
-│
-├── .github/workflows/
-│   ├── ci.yml          compila y prueba en los tres sistemas
-│   └── release.yml     publica los binarios al etiquetar
-│
-├── packaging/
-│   ├── homebrew/       plantilla de la formula de Homebrew
-│   └── scoop/          plantilla del manifiesto de Scoop
-│
-├── install.sh          instalador para macOS y Linux
-├── install.ps1         instalador para Windows
-│
-├── CMakeLists.txt      build multiplataforma
-├── Makefile            build de desarrollo (Unix)
-├── LICENSE
-└── README.md`
-
-const CODE_TESTS = `make test
-========================================
-Tests:  138
-Passed: 138
-Failed: 0
-========================================
-
-All tests passed.`
-
-const CODE_EDUCATION = `make test-education
-=== TzLang Education Suite ===
-
-[PASS] 01_variables
-
-========================================
-Tests:  1
-Passed: 1
-Failed: 0
-========================================
-
-All education tests passed.`
-
-const navGroups = [
-  {
-    label: 'Lenguaje',
-    items: [
-      { id: 'que-es', label: 'Qué es TzLang' },
-      { id: 'sintaxis', label: 'Sintaxis en español' },
-      { id: 'ejemplos', label: 'Ejemplos' },
-      { id: 'lenguaje', label: 'Referencia completa' },
-    ]
-  },
-  {
-    label: 'Empezar',
-    items: [
-      { id: 'instalacion', label: 'Instalación' },
-    ]
-  },
-  {
-    label: 'Desarrollo',
-    items: [
-      { id: 'arquitectura', label: 'Arquitectura' },
-      { id: 'desarrollo', label: 'Comandos y tests' },
-      { id: 'roadmap', label: 'Roadmap' },
-    ]
-  },
-]
+// ============================================
+// LAYOUT COMPONENTS
+// ============================================
 
 function Header() {
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
-
-  const handleDropdownClick = (label: string) => {
-    setOpenDropdown(prev => prev === label ? null : label)
-  }
-
-  const handleItemClick = () => {
-    setOpenDropdown(null)
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent, _label: string) => {
-    if (e.key === 'Escape') {
-      setOpenDropdown(null)
-    }
-  }
-
+  const location = useLocation()
+  
   return (
     <header className="header">
       <nav className="nav container" role="navigation" aria-label="Navegación principal">
-        <a href="#inicio" className="logo" aria-label="TzLang - Inicio">
+        <Link to="/" className="logo" aria-label="TzLang - Inicio">
           <span className="logo-icon" aria-hidden="true">Tz</span>
           <span className="logo-text">TzLang</span>
-        </a>
+        </Link>
         <button className="nav-toggle" aria-expanded="false" aria-controls="nav-menu" aria-label="Abrir menú">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -553,43 +557,20 @@ function Header() {
           </svg>
         </button>
         <ul className="nav-links" id="nav-menu" role="menubar">
-          <li role="none">
-            <a href="#inicio" role="menuitem">Inicio</a>
-          </li>
-          {navGroups.map((group) => (
-            <li key={group.label} className="nav-dropdown" role="none">
-              <button
-                className={`nav-dropdown-trigger ${openDropdown === group.label ? 'open' : ''}`}
-                onClick={() => handleDropdownClick(group.label)}
-                onKeyDown={(e) => handleKeyDown(e, group.label)}
-                aria-expanded={openDropdown === group.label}
-                aria-haspopup="true"
+          {navItems.map(item => (
+            <li key={item.path} role="none">
+              <Link 
+                to={item.path} 
                 role="menuitem"
+                className={location.pathname === item.path ? 'active' : ''}
+                onClick={() => closeMobileMenu()}
               >
-                {group.label}
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" className="dropdown-arrow">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              </button>
-              {openDropdown === group.label && (
-                <ul className="nav-dropdown-menu" role="menu">
-                  {group.items.map(item => (
-                    <li key={item.id} role="none">
-                      <a
-                        href={'#' + item.id}
-                        role="menuitem"
-                        onClick={handleItemClick}
-                      >
-                        {item.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              )}
+                {item.label}
+              </Link>
             </li>
           ))}
         </ul>
-        <a href="https://github.com/tzerk-last/TzLanguaje" target="_blank" rel="noopener noreferrer" className="btn btn-github" aria-label="Ver en GitHub">
+        <a href="https://github.com/TzLanguaje/TzLanguaje" target="_blank" rel="noopener noreferrer" className="btn btn-github" aria-label="Ver en GitHub">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
           </svg>
@@ -600,74 +581,51 @@ function Header() {
   )
 }
 
-function Hero() {
+function closeMobileMenu() {
+  const navMenu = document.getElementById('nav-menu')
+  const navToggle = document.querySelector('.nav-toggle')
+  if (navMenu && navMenu.classList.contains('open')) {
+    navMenu.classList.remove('open')
+    navToggle?.setAttribute('aria-expanded', 'false')
+  }
+}
+
+function Footer() {
   return (
-    <section id="inicio" className="hero" aria-labelledby="hero-title">
+    <footer className="footer" role="contentinfo">
       <div className="container">
-        <div className="hero-content">
-          <div className="badges" role="list" aria-label="Información del proyecto">
-            <span className="badge" role="listitem">CI</span>
-            <span className="badge" role="listitem">Versión 0.1.0</span>
-            <span className="badge" role="listitem">C11</span>
-            <span className="badge" role="listitem">138 tests</span>
-            <span className="badge" role="listitem">Licencia MIT</span>
-            <span className="badge" role="listitem">Multiplataforma</span>
-          </div>
-          <h1 id="hero-title">Un lenguaje de programación educativo en español, construido desde cero en C11</h1>
-          <p className="hero-description">
-            TzLang es un lenguaje interpretado con sintaxis en español, pensado para aprender 
-            los conceptos fundamentales de la programación sin la barrera del inglés.
-          </p>
-          <div className="hero-actions">
-            <a href="#instalacion" className="btn btn-primary">Empezar ahora</a>
-            <a href="#ejemplos" className="btn btn-secondary">Ver ejemplos</a>
-          </div>
-          <HeroCodeAnimated />
-        </div>
+        <p>TzLang • Lenguaje de programación educativo en español</p>
+        <p>Construido en C11 • Licencia MIT</p>
+        <a href="https://github.com/TzLanguaje/TzLanguaje" target="_blank" rel="noopener noreferrer">
+          Ver en GitHub
+        </a>
       </div>
-    </section>
+    </footer>
   )
 }
 
-function WhatIs() {
-  const components = [
-    { name: 'Lexer', desc: 'Convierte el texto fuente en tokens' },
-    { name: 'Parser', desc: 'Analiza los tokens y construye el árbol sintáctico' },
-    { name: 'AST', desc: 'Representa la estructura del programa' },
-    { name: 'Intérprete', desc: 'Recorre el AST y ejecuta el programa' },
-    { name: 'Runtime', desc: 'Gestiona valores, operaciones y memoria' },
-  ]
+// ============================================
+// SHARED UI COMPONENTS
+// ============================================
 
+function SectionTitle({ title, description, id }: { title: string; description?: string; id?: string }) {
   return (
-    <section id="que-es" className="section" aria-labelledby="que-es-title">
-      <div className="container">
-        <h2 id="que-es-title">Qué es TzLang</h2>
-        <p className="section-lead">
-          TzLang es un lenguaje de programación interpretado con sintaxis en español, 
-          pensado para aprender los conceptos fundamentales de la programación sin la barrera del inglés.
-        </p>
-        <p>
-          Está construido desde cero en C11, sin dependencias externas ni generadores de parsers. 
-          Todas las piezas son propias:
-        </p>
-        <div className="components-grid">
-          {components.map((comp, i) => (
-            <div key={comp.name} className="component-card">
-              <div className="component-number">{i + 1}</div>
-              <h3>{comp.name}</h3>
-              <p>{comp.desc}</p>
-            </div>
-          ))}
-        </div>
-        <p className="mt-lg">
-          Los programas se escriben en archivos con extensión <code>.tz</code> y se ejecutan con el comando <code>tz</code>.
-        </p>
-      </div>
-    </section>
+    <div className="section-header">
+      <h2 id={id}>{title}</h2>
+      {description && <p className="section-lead">{description}</p>}
+    </div>
   )
 }
 
-function SpanishSyntax() {
+function CodeBlock({ code }: { code: string }) {
+  return (
+    <div className="code-example">
+      <pre><code>{code}</code></pre>
+    </div>
+  )
+}
+
+function ComparisonTable() {
   const comparisons = [
     { español: 'es mayor que', simbolo: '>' },
     { español: 'es menor que', simbolo: '<' },
@@ -678,424 +636,205 @@ function SpanishSyntax() {
   ]
 
   return (
-    <section id="sintaxis" className="section section-alt" aria-labelledby="sintaxis-title">
-      <div className="container">
-        <h2 id="sintaxis-title">La sintaxis en español es el punto de partida</h2>
-        <p>
-          Lo que distingue a TzLang de un intérprete de juguete cualquiera es que las comparaciones 
-          se escriben como se dicen en voz alta. Quien está aprendiendo no necesita traducir mentalmente 
-          {'<code>>=</code>'} antes de entender qué hace su programa:
-        </p>
-        <div className="code-example">
-          <pre><code>{CODE_COMPARISON}</code></pre>
-        </div>
-        <p>Las seis formas comparativas son parte del lenguaje, no azúcar sintáctico añadido después:</p>
-        <table className="comparison-table">
-          <thead>
-            <tr>
-              <th>Forma en español</th>
-              <th>Equivalente simbólico</th>
-            </tr>
-          </thead>
-          <tbody>
-            {comparisons.map((c, i) => (
-              <tr key={i}>
-                <td><code>{c.español}</code></td>
-                <td><code>{c.simbolo}</code></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <p>Ambas notaciones son intercambiables y se pueden mezclar:</p>
-        <div className="code-example">
-          <pre><code>{CODE_MIXED}</code></pre>
-        </div>
-        <p>Los operadores lógicos siguen la misma idea: <code>y</code>, <code>o</code> y <code>no</code>.</p>
-        <div className="code-example">
-          <pre><code>{CODE_LOGICAL}</code></pre>
-        </div>
-      </div>
-    </section>
+    <table className="comparison-table">
+      <thead>
+        <tr>
+          <th>Forma en español</th>
+          <th>Equivalente simbólico</th>
+        </tr>
+      </thead>
+      <tbody>
+        {comparisons.map((c, i) => (
+          <tr key={i}>
+            <td><code>{c.español}</code></td>
+            <td><code>{c.simbolo}</code></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   )
 }
 
-function Examples() {
+function LangCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section id="ejemplos" className="section" aria-labelledby="ejemplos-title">
-      <div className="container">
-        <h2 id="ejemplos-title">Un programa completo</h2>
-        <p>Este ejemplo reúne funciones, diccionarios, listas, bucles y condicionales:</p>
-        <div className="code-example">
-          <pre><code>{CODE_FULL}</code></pre>
-        </div>
-      </div>
-    </section>
+    <div className="lang-card">
+      <h3>{title}</h3>
+      <div className="lang-content">{children}</div>
+    </div>
   )
 }
 
-function Installation() {
-  return (
-    <section id="instalacion" className="section section-alt" aria-labelledby="instalacion-title">
-      <div className="container">
-        <h2 id="instalacion-title">Instalación</h2>
-        <p>TzLang se distribuye como un binario único sin dependencias. Funciona en macOS, Linux y Windows.</p>
-        
-        <div className="install-tabs">
-          <div className="tab-buttons" role="tablist" aria-label="Métodos de instalación">
-            <button className="tab-btn active" data-tab="macos" role="tab" aria-selected="true" aria-controls="tab-macos" id="btn-macos">macOS y Linux</button>
-            <button className="tab-btn" data-tab="windows" role="tab" aria-selected="false" aria-controls="tab-windows" id="btn-windows">Windows</button>
-            <button className="tab-btn" data-tab="packages" role="tab" aria-selected="false" aria-controls="tab-packages" id="btn-packages">Gestores</button>
-            <button className="tab-btn" data-tab="manual" role="tab" aria-selected="false" aria-controls="tab-manual" id="btn-manual">Descarga manual</button>
-            <button className="tab-btn" data-tab="build" role="tab" aria-selected="false" aria-controls="tab-build" id="btn-build">Compilar</button>
-          </div>
-          
-          <div className="tab-panel active" id="tab-macos" role="tabpanel" aria-labelledby="btn-macos">
-            <pre><code>{CODE_INSTALL_MACOS}</code></pre>
-            <p>Descarga el binario de la última versión, verifica su checksum SHA-256 y lo instala en <code>~/.local/bin/tz</code>. No requiere permisos de administrador.</p>
-            <h4>Opciones:</h4>
-            <pre><code>{CODE_INSTALL_MACOS_OPTS}</code></pre>
-          </div>
-          
-          <div className="tab-panel" id="tab-windows" role="tabpanel" aria-labelledby="btn-windows" hidden>
-            <pre><code>{CODE_INSTALL_WINDOWS}</code></pre>
-            <p>Instala en <code>%LOCALAPPDATA%\Programs\TzLang\bin</code> y añade esa carpeta al PATH del usuario. Tampoco necesita administrador. Abre una terminal nueva al terminar.</p>
-          </div>
-          
-          <div className="tab-panel" id="tab-packages" role="tabpanel" aria-labelledby="btn-packages" hidden>
-            <pre><code>{CODE_INSTALL_PACKAGES}</code></pre>
-          </div>
-          
-          <div className="tab-panel" id="tab-manual" role="tabpanel" aria-labelledby="btn-manual" hidden>
-            <table className="simple-table">
-              <thead><tr><th>Sistema</th><th>Archivo</th></tr></thead>
-              <tbody>
-                <tr><td>macOS (Intel y Apple Silicon)</td><td><code>tzlang-vX.Y.Z-macos-universal.tar.gz</code></td></tr>
-                <tr><td>Linux x86-64</td><td><code>tzlang-vX.Y.Z-linux-x86_64.tar.gz</code></td></tr>
-                <tr><td>Linux ARM64</td><td><code>tzlang-vX.Y.Z-linux-aarch64.tar.gz</code></td></tr>
-                <tr><td>Windows x86-64</td><td><code>tzlang-vX.Y.Z-windows-x86_64.zip</code></td></tr>
-              </tbody>
-            </table>
-            <p>Binarios en la <a href="https://github.com/tzerk-last/TzLanguaje/releases" target="_blank" rel="noopener noreferrer">página de releases</a> con <code>SHA256SUMS.txt</code> para verificación. Los binarios de Linux están enlazados estáticamente.</p>
-          </div>
-          
-          <div className="tab-panel" id="tab-build" role="tabpanel" aria-labelledby="btn-build" hidden>
-            <h4>Con CMake (los tres sistemas - recomendado)</h4>
-            <pre><code>{CODE_BUILD_CMAKE}</code></pre>
-            <p>Ejecutable en <code>build-cmake/tz</code> (<code>build-cmake\Release\tz.exe</code> en Windows).</p>
-            
-            <h4>Con Make (macOS y Linux - desarrollo)</h4>
-            <pre><code>{CODE_BUILD_MAKE}</code></pre>
-          </div>
-        </div>
-
-        <h3 className="mt-lg">Comprobar que funciona</h3>
-        <pre><code>{CODE_CHECK}</code></pre>
-      </div>
-    </section>
-  )
-}
-
-function LanguageReference() {
-  const sections = [
-    {
-      id: 'variables',
-      title: 'Variables',
-      content: CODE_VARIABLES
-    },
-    {
-      id: 'tipos',
-      title: 'Tipos de datos',
-      content: CODE_TIPOS
-    },
-    {
-      id: 'operadores',
-      title: 'Operadores aritméticos',
-      content: CODE_OPERADORES
-    },
-    {
-      id: 'condicionales',
-      title: 'Condicionales',
-      content: CODE_CONDICIONALES
-    },
-    {
-      id: 'bucles',
-      title: 'Bucles',
-      content: CODE_BUCLES
-    },
-    {
-      id: 'break-continue',
-      title: 'Romper y continuar',
-      content: CODE_BREAK_CONTINUE
-    },
-    {
-      id: 'funciones',
-      title: 'Funciones',
-      content: CODE_FUNCIONES
-    },
-    {
-      id: 'listas',
-      title: 'Listas',
-      content: CODE_LISTAS
-    },
-    {
-      id: 'diccionarios',
-      title: 'Diccionarios',
-      content: CODE_DICCIONARIOS
-    },
-    {
-      id: 'copia-profunda',
-      title: 'Copia profunda',
-      content: CODE_COPIA
-    },
-    {
-      id: 'builtins',
-      title: 'Funciones incorporadas (16)',
-      content: 'TzLang incluye 16 funciones integradas:',
-      table: [
-        ['Función', 'Descripción', 'Ejemplo', 'Resultado'],
-        ['largo(x)', 'Longitud de texto, lista o diccionario', 'largo("Hola")', '4'],
-        ['tipo(x)', 'Nombre del tipo', 'tipo(3.14)', 'decimal'],
-        ['texto(x)', 'Convierte a texto', 'texto(42)', '"42"'],
-        ['numero(x)', 'Convierte a número entero', 'numero("42")', '42'],
-        ['decimal(x)', 'Convierte a decimal', 'decimal(7)', '7'],
-        ['agregar(lista, x)', 'Añade un elemento al final', 'agregar(l, 4)', '—'],
-        ['eliminar(x, k)', 'Borra por índice o por clave', 'eliminar(l, 0)', '—'],
-        ['contiene(x, v)', '¿Contiene el valor o la clave?', 'contiene(l, 99)', 'verdadero'],
-        ['unir(lista, sep)', 'Une una lista de textos', 'unir(["a","b"], "-")', '"a-b"'],
-        ['separar(txt, sep)', 'Parte un texto en lista', 'separar("a,b", ",")', '["a", "b"]'],
-        ['mayusculas(txt)', 'Pasa a mayúsculas', 'mayusculas("hola")', '"HOLA"'],
-        ['minusculas(txt)', 'Pasa a minúsculas', 'minusculas("HOLA")', '"hola"'],
-        ['absoluto(x)', 'Valor absoluto', 'absoluto(-7)', '7'],
-        ['redondear(x)', 'Redondea a número', 'redondear(3.7)', '4'],
-        ['claves(dic)', 'Lista de claves', 'claves(p)', '["nombre"]'],
-        ['valores(dic)', 'Lista de valores', 'valores(p)', '["Carlos"]'],
-      ],
-      note: '<code>agregar</code> y <code>eliminar</code> modifican la estructura que reciben; el resto devuelven un valor nuevo.'
-    },
-    {
-      id: 'errores',
-      title: 'Errores',
-      content: CODE_ERRORS
-    },
+function Pipeline() {
+  const steps = [
+    { name: 'archivo .tz', highlighted: false, desc: null },
+    { name: 'Lexer', highlighted: true, desc: 'texto → tokens' },
+    { name: 'Parser', highlighted: true, desc: 'tokens → AST' },
+    { name: 'AST', highlighted: true, desc: 'estructura del programa' },
+    { name: 'Interpreter', highlighted: true, desc: 'recorre y ejecuta' },
+    { name: 'Runtime', highlighted: true, desc: 'valores, operaciones, memoria' },
+    { name: 'salida', highlighted: false, desc: null },
   ]
 
   return (
-    <section id="lenguaje" className="section" aria-labelledby="lenguaje-title">
-      <div className="container">
-        <h2 id="lenguaje-title">Referencia del lenguaje</h2>
-        <div className="language-grid">
-          {sections.map((section, _i) => (
-            <div key={section.id} className="lang-card">
-              <h3>{section.title}</h3>
-              <div className="lang-content">
-                {section.table ? (
-                  <>
-                    <p>{section.content}</p>
-                    <div className="table-wrapper">
-                      <table>
-                        <thead>
-                          <tr>{section.table[0].map((h, j) => <th key={j}>{h}</th>)}</tr>
-                        </thead>
-                        <tbody>
-                          {section.table.slice(1).map((row, j) => (
-                            <tr key={j}>{row.map((cell, k) => <td key={k}>{cell}</td>)}</tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    {section.note && <p className="note" dangerouslySetInnerHTML={{ __html: section.note }} />}
-                  </>
-                ) : (
-                  <pre><code>{section.content}</code></pre>
-                )}
-              </div>
+    <div className="pipeline" role="img" aria-label="Pipeline del intérprete">
+      {steps.map((step, i) => (
+        <div key={step.name} className="pipeline-step">
+          <div className={`step-box ${step.highlighted ? 'highlighted' : ''}`}>{step.name}</div>
+          {step.desc && <div className="step-desc">{step.desc}</div>}
+          {i < steps.length - 1 && <div className="arrow" aria-hidden="true">▼</div>}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function CommandTable() {
+  const commands = [
+    { cmd: 'make', desc: 'Compila <code>build/tzc</code>' },
+    { cmd: 'make test', desc: 'Compila y ejecuta la suite principal (171 tests)' },
+    { cmd: 'make test-education', desc: 'Valida el material de <code>education/</code> (5 lecciones)' },
+    { cmd: 'make debug', desc: 'Genera <code>build/tzc-debug</code> con <code>-g -O0</code>' },
+    { cmd: 'make asan', desc: 'Genera <code>build/tzc-asan</code> y pasa la suite con sanitizers' },
+    { cmd: 'make install', desc: 'Instala el comando <code>tz</code>' },
+    { cmd: 'make uninstall', desc: 'Desinstala el comando <code>tz</code>' },
+    { cmd: 'make clean', desc: 'Borra todo lo generado en <code>build/</code>' },
+  ]
+
+  return (
+    <table>
+      <thead>
+        <tr><th>Orden</th><th>Qué hace</th></tr>
+      </thead>
+      <tbody>
+        {commands.map((c, i) => (
+          <tr key={i}>
+            <td><code>{c.cmd}</code></td>
+            <td dangerouslySetInnerHTML={{ __html: c.desc }} />
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
+// ============================================
+// PAGE COMPONENTS
+// ============================================
+
+function HomePage() {
+  return (
+    <>
+      <section id="inicio" className="hero" aria-labelledby="hero-title">
+        <div className="container">
+          <div className="hero-content">
+            <div className="badges" role="list" aria-label="Información del proyecto">
+              <span className="badge" role="listitem">CI</span>
+              <span className="badge" role="listitem">Versión 0.3.4</span>
+              <span className="badge" role="listitem">C11</span>
+              <span className="badge" role="listitem">171 tests</span>
+              <span className="badge" role="listitem">Licencia MIT</span>
+              <span className="badge" role="listitem">Multiplataforma</span>
             </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function Architecture() {
-  return (
-    <section id="arquitectura" className="section section-alt" aria-labelledby="arquitectura-title">
-      <div className="container">
-        <h2 id="arquitectura-title">Arquitectura</h2>
-        <p>El intérprete procesa cada programa en una tubería de etapas bien separadas, cada una en su propio directorio dentro de <code>src/</code>:</p>
-        
-        <div className="pipeline" role="img" aria-label="Pipeline del intérprete: archivo .tz → Lexer → Parser → AST → Interpreter → Runtime → salida">
-          <div className="pipeline-step">
-            <div className="step-box">archivo .tz</div>
-            <div className="arrow" aria-hidden="true">▼</div>
-          </div>
-          <div className="pipeline-step">
-            <div className="step-box highlighted">Lexer</div>
-            <div className="step-desc">texto → tokens</div>
-            <div className="arrow" aria-hidden="true">▼</div>
-          </div>
-          <div className="pipeline-step">
-            <div className="step-box highlighted">Parser</div>
-            <div className="step-desc">tokens → AST</div>
-            <div className="arrow" aria-hidden="true">▼</div>
-          </div>
-          <div className="pipeline-step">
-            <div className="step-box highlighted">AST</div>
-            <div className="step-desc">estructura del programa</div>
-            <div className="arrow" aria-hidden="true">▼</div>
-          </div>
-          <div className="pipeline-step">
-            <div className="step-box highlighted">Interpreter</div>
-            <div className="step-desc">recorre y ejecuta</div>
-            <div className="arrow" aria-hidden="true">▼</div>
-          </div>
-          <div className="pipeline-step">
-            <div className="step-box highlighted">Runtime</div>
-            <div className="step-desc">valores, operaciones, memoria</div>
-            <div className="arrow" aria-hidden="true">▼</div>
-          </div>
-          <div className="pipeline-step">
-            <div className="step-box">salida</div>
+            <h1 id="hero-title">TzLang</h1>
+            <p className="hero-tagline">Lenguaje de programación en español • Hecho en C11 • Open source</p>
+            <div className="hero-actions">
+              <Link to="/que-es" className="btn btn-primary">Explorar el lenguaje</Link>
+              <Link to="/sintaxis" className="btn btn-secondary">Ver sintaxis</Link>
+            </div>
+            <HeroCodeAnimated />
           </div>
         </div>
+      </section>
 
-        <h3 className="mt-lg">Estructura del proyecto</h3>
-        <pre><code>{CODE_PROJECT}</code></pre>
-      </div>
-    </section>
+      <section id="instalacion" className="section section-alt" aria-labelledby="instalacion-title">
+        <div className="container">
+          <SectionTitle 
+            id="instalacion-title"
+            title="Instalación" 
+            description="No hace falta compilar nada ni instalar dependencias. Descargas un archivo, lo abres, y listo."
+          />
+          
+          <h3>Descarga directa (recomendado)</h3>
+<p>Todos los instaladores están en la <a href="https://github.com/TzLanguaje/TzLanguaje/releases/tag/v0.3.4" target="_blank" rel="noopener noreferrer">página de descargas v0.3.4</a>. Baja hasta <strong>Assets</strong> y elige tu archivo:</p>
+
+          <table className="simple-table">
+            <thead><tr><th>Si usas…</th><th>Descarga este archivo</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Windows</strong></td><td><a href="https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.3.4/TzLang-v0.3.4-windows-x86_64-setup.exe" target="_blank" rel="noopener noreferrer"><code>TzLang-v0.3.4-windows-x86_64-setup.exe</code></a></td></tr>
+              <tr><td><strong>Mac</strong> (Intel o M1/M2/M3)</td><td><a href="https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.3.4/TzLang-v0.3.4-macos.pkg" target="_blank" rel="noopener noreferrer"><code>TzLang-v0.3.4-macos.pkg</code></a></td></tr>
+              <tr><td><strong>Ubuntu, Debian, Mint</strong></td><td><a href="https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.3.4/tzlang_0.3.4_amd64.deb" target="_blank" rel="noopener noreferrer"><code>tzlang_0.3.4_amd64.deb</code></a></td></tr>
+              <tr><td><strong>Fedora, RHEL, openSUSE</strong></td><td><a href="https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.3.4/tzlang-0.3.4-1.x86_64.rpm" target="_blank" rel="noopener noreferrer"><code>tzlang-0.3.4-1.x86_64.rpm</code></a></td></tr>
+            </tbody>
+          </table>
+          <p className="note"><strong>ARM / Raspberry Pi:</strong> cambia <code>amd64</code> por <code>arm64</code> (en <code>.deb</code>) o <code>x86_64</code> por <code>aarch64</code> (en <code>.rpm</code>).</p>
+
+          <h3 className="mt-lg">Comprueba que funciona</h3>
+          <p>Abre una terminal <strong>nueva</strong> (importante: abierta <em>después</em> de instalar) y escribe:</p>
+          <CodeBlock code={CODE_CHECK} />
+          <p>Si responde <code>TzLang 0.3.4</code>, ya está instalado. Si dice "orden no encontrada", cierra y abre una terminal nueva, o en Windows vuelve a pasar el instalador con la casilla del PATH marcada.</p>
+
+          <h3 className="mt-md">Tu primer programa</h3>
+          <p>Crea <code>hola.tz</code> con:</p>
+          <CodeBlock code={`imprimir "Hola desde TzLang"`} />
+          <p>Y ejecútalo:</p>
+          <CodeBlock code={`tz hola.tz`} />
+        </div>
+      </section>
+
+      <section id="roadmap" className="section" aria-labelledby="roadmap-title">
+        <div className="container">
+          <SectionTitle title="Roadmap y Limitaciones" />
+          
+          <h3>Limitaciones actuales</h3>
+          <ul className="limitations-list">
+            <li dangerouslySetInnerHTML={{ __html: '<strong>Unicode.</strong> Los textos se tratan como bytes, no como caracteres. <code>largo("año")</code> devuelve <code>4</code> en lugar de <code>3</code>, y <code>mayusculas("año")</code> devuelve <code>AñO</code>. Es la limitación más visible para un lenguaje en español.' }} />
+            <li dangerouslySetInnerHTML={{ __html: '<strong>Paso de argumentos por copia.</strong> Las funciones reciben <em>copias</em> de listas y diccionarios, no referencias. Modificar una dentro de una función no afecta a la de fuera; hay que devolverla. Es lo contrario de Python/JS.' }} />
+            <li dangerouslySetInnerHTML={{ __html: '<strong>Ausencias del lenguaje.</strong> No hay módulos ni importaciones, clases, funciones anónimas, generadores, conjuntos, tuplas, recolector de basura ni enteros de precisión arbitraria.' }} />
+          </ul>
+
+          <h3>Lo terminado en la 0.3.4</h3>
+          <ul className="checklist">
+            <li>Lexer, parser, AST, intérprete y runtime propios</li>
+            <li>Variables y los siete tipos</li>
+            <li>Operadores aritméticos (+, -, *, /, <strong>%</strong>), comparación, lógicos</li>
+            <li>Sintaxis comparativa en español + simbólica</li>
+            <li>Condicionales con <code>sino si</code>, bucles, <code>romper</code> y <code>continuar</code></li>
+            <li>Secuencias de escape en textos (<code>\n</code>, <code>\t</code>, <code>\"</code>, <code>\\</code>)</li>
+            <li>Funciones con parámetros, retorno, recursión y scope léxico</li>
+            <li>Listas y diccionarios anidados con copia profunda, <strong>índices negativos</strong> y <strong>concatenación (+)</strong></li>
+            <li><strong>17 funciones incorporadas</strong>, incluyendo <code>entrada()</code> para teclado</li>
+            <li>CLI con códigos de salida diferenciados (0, 1, 2, 3)</li>
+            <li><strong>Notas de diagnóstico</strong> por categoría de error (<code>TZ_NOTAS</code>)</li>
+            <li><strong>5 lecciones</strong> en <code>education/</code> con salida esperada</li>
+            <li>Suite de <strong>171 pruebas</strong> verde también bajo ASan y UBSan</li>
+            <li>CI que compila y prueba en <strong>Linux, macOS y Windows</strong></li>
+            <li><strong>Instaladores nativos</strong> (.pkg, .exe, .deb, .rpm) publicados automáticamente</li>
+            <li>Homebrew, Scoop, npm publicados en cada versión</li>
+          </ul>
+
+          <h3>Lo siguiente (por prioridad)</h3>
+          <ol className="roadmap-list">
+            <li><span className="priority">1</span>Soporte real de Unicode en textos y funciones de cadena</li>
+            <li><span className="priority">2</span>Seguir ampliando <code>education/</code> con más lecciones y ejercicios</li>
+            <li><span className="priority">3</span>Mensajes de error con número de línea y contexto en todas las etapas</li>
+            <li><span className="priority">4</span>Decidir si el paso de argumentos debe seguir siendo por copia</li>
+            <li><span className="priority">5</span>Sistema de módulos</li>
+          </ol>
+          <p className="note mt-md">No hay fechas comprometidas: es un proyecto en desarrollo.</p>
+
+          <h3 className="mt-lg">Documentación</h3>
+          <p>La referencia completa del lenguaje, sección por sección, está en <a href="https://github.com/TzLanguaje/TzLanguaje/blob/main/docs/language.md" target="_blank" rel="noopener noreferrer"><code>docs/language.md</code></a>.</p>
+
+          <h3>Licencia</h3>
+          <p>TzLang se distribuye bajo la licencia <strong>MIT</strong>. Consulta el archivo <a href="https://github.com/TzLanguaje/TzLanguaje/blob/main/LICENSE" target="_blank" rel="noopener noreferrer"><code>LICENSE</code></a> para el texto completo.</p>
+        </div>
+      </section>
+    </>
   )
 }
 
-function Development() {
-  return (
-    <section id="desarrollo" className="section" aria-labelledby="desarrollo-title">
-      <div className="container">
-        <h2 id="desarrollo-title">Desarrollo y Pruebas</h2>
-        
-        <h3>Comandos principales (Makefile)</h3>
-        <table>
-          <thead>
-            <tr><th>Orden</th><th>Qué hace</th></tr>
-          </thead>
-          <tbody>
-            <tr><td><code>make</code></td><td>Compila <code>build/tzc</code></td></tr>
-            <tr><td><code>make test</code></td><td>Compila y ejecuta la suite principal</td></tr>
-            <tr><td><code>make test-education</code></td><td>Valida el material de <code>education/</code></td></tr>
-            <tr><td><code>make debug</code></td><td>Genera <code>build/tzc-debug</code> con <code>-g -O0</code></td></tr>
-            <tr><td><code>make asan</code></td><td>Genera <code>build/tzc-asan</code> y pasa la suite con sanitizers</td></tr>
-            <tr><td><code>make install</code></td><td>Instala el comando <code>tz</code></td></tr>
-            <tr><td><code>make uninstall</code></td><td>Desinstala el comando <code>tz</code></td></tr>
-            <tr><td><code>make clean</code></td><td>Borra todo lo generado en <code>build/</code></td></tr>
-          </tbody>
-        </table>
-
-        <p>El compilador se puede elegir pasando la variable <code>CC</code>, por ejemplo <code>make CC=clang</code>.</p>
-
-        <h3>Pruebas</h3>
-        <p>La suite principal ejecuta el binario real sobre archivos <code>.tz</code> y compara la salida y el código de salida con lo esperado. No enlaza contra funciones internas de C: prueba el lenguaje tal y como lo ve un usuario.</p>
-        <pre><code>{CODE_TESTS}</code></pre>
-        <p>Las 138 pruebas cubren aritmética, desbordamiento de enteros, conversiones, textos, listas, diccionarios, indexación anidada, control de flujo, funciones, recursión, scope, errores de lexer, parser e intérprete, y el comportamiento de la CLI (BOM UTF-8, CRLF, archivos vacíos, extensiones y argumentos inválidos).</p>
-
-        <h3>Sanitizers</h3>
-        <p><code>make asan</code> compila un binario aparte con AddressSanitizer y UndefinedBehaviorSanitizer, y pasa por él la misma suite completa. Sirve para detectar use-after-free, dobles liberaciones, desbordamientos de búfer y comportamiento indefinido.</p>
-        <p>Los tres binarios conviven sin pisarse: <code>build/tzc</code>, <code>build/tzc-debug</code> y <code>build/tzc-asan</code>.</p>
-
-        <h3>Education</h3>
-        <p>El directorio <code>education/</code> contiene lecciones progresivas. Cada una es un programa <code>.tz</code> acompañado de un archivo <code>.expected</code> con su salida exacta, de modo que el material didáctico se verifica automáticamente y no puede quedar desactualizado respecto al lenguaje:</p>
-        <pre><code>{CODE_EDUCATION}</code></pre>
-        <p>Esta suite es independiente de la principal y es más estricta: exige código de salida 0, stderr vacío y coincidencia exacta de stdout. Ahora mismo hay una lección; ampliar el temario es una de las prioridades del proyecto.</p>
-      </div>
-    </section>
-  )
-}
-
-function Roadmap() {
-  const limitations = [
-    'Unicode: Los textos se tratan como bytes, no como caracteres. <code>largo("año")</code> devuelve 4 en lugar de 3, y <code>mayusculas("año")</code> deja intacta la ñ.',
-    'Ausencias del lenguaje: No hay módulos ni importaciones, clases, funciones anónimas, generadores, conjuntos, tuplas, recolector de basura ni enteros de precisión arbitraria. Tampoco existe el operador de módulo (<code>%</code>).',
-    'Plataformas: Solo se ha validado sobre macOS con Apple Clang.',
-  ]
-
-  const roadmap = [
-    { priority: 1, title: 'Soporte real de Unicode en textos y funciones de cadena' },
-    { priority: 2, title: 'Ampliar el temario de education/ con más lecciones' },
-    { priority: 3, title: 'Mensajes de error con número de línea y contexto en todas las etapas' },
-    { priority: 4, title: 'Validar de verdad la compilación en Linux y con GCC' },
-    { priority: 5, title: 'Unificar el nombre del comando en la ayuda integrada' },
-    { priority: 6, title: 'Sistema de módulos' },
-  ]
-
-  const done = [
-    'Lexer, parser, AST, intérprete y runtime propios',
-    'Variables y los siete tipos',
-    'Operadores aritméticos, de comparación y lógicos',
-    'Sintaxis comparativa en español',
-    'Condicionales, bucles, romper y continuar',
-    'Funciones con parámetros, retorno, recursión y scope léxico',
-    'Listas y diccionarios anidados con copia profunda',
-    '16 funciones incorporadas',
-    'CLI con códigos de salida diferenciados',
-    'Suite de 138 pruebas',
-    'Compilación con sanitizers e instalación mediante make install',
-  ]
-
-  return (
-    <section id="roadmap" className="section section-alt" aria-labelledby="roadmap-title">
-      <div className="container">
-        <h2 id="roadmap-title">Roadmap y Limitaciones</h2>
-        
-        <h3>Limitaciones actuales</h3>
-        <ul className="limitations-list">
-          {limitations.map((item, i) => (
-            <li key={i} dangerouslySetInnerHTML={{ __html: item }} />
-          ))}
-        </ul>
-
-        <h3>Lo terminado en la 0.1.0</h3>
-        <ul className="checklist">
-          {done.map((item, i) => (
-            <li key={i}>{item}</li>
-          ))}
-        </ul>
-
-        <h3>Lo siguiente (por prioridad)</h3>
-        <ol className="roadmap-list">
-          {roadmap.map(item => (
-            <li key={item.priority}>
-              <span className="priority">{item.priority}</span>
-              {item.title}
-            </li>
-          ))}
-        </ol>
-        <p className="note mt-md">No hay fechas comprometidas: es un proyecto en desarrollo.</p>
-
-        <h3 className="mt-lg">Documentación</h3>
-        <p>La referencia completa del lenguaje, sección por sección, está en <code>docs/language.md</code>.</p>
-
-        <h3>Licencia</h3>
-        <p>TzLang se distribuye bajo la licencia MIT. Consulta el archivo <code>LICENSE</code> para el texto completo.</p>
-      </div>
-    </section>
-  )
-}
-
-function Footer() {
-  return (
-    <footer className="footer" role="contentinfo">
-      <div className="container">
-        <p>TzLang • Lenguaje de programación educativo en español</p>
-        <p>Construido en C11 • Licencia MIT</p>
-        <a href="https://github.com/tzerk-last/TzLanguaje" target="_blank" rel="noopener noreferrer">
-          Ver en GitHub
-        </a>
-      </div>
-    </footer>
-  )
-}
-
-function App() {
+function QueEsPage() {
   useEffect(() => {
-    // Tab handling
     const tabButtons = document.querySelectorAll('.tab-btn') as NodeListOf<HTMLElement>
     const tabPanels = document.querySelectorAll('.tab-panel') as NodeListOf<HTMLElement>
     
@@ -1119,43 +858,446 @@ function App() {
         if (panel) panel.hidden = false
       })
     })
+  }, [])
 
-    // Mobile nav toggle
+  const components = [
+    { name: 'Lexer', desc: 'Convierte el texto fuente en tokens' },
+    { name: 'Parser', desc: 'Analiza los tokens y construye el árbol sintáctico' },
+    { name: 'AST', desc: 'Representa la estructura del programa' },
+    { name: 'Intérprete', desc: 'Recorre el AST y ejecuta el programa' },
+    { name: 'Runtime', desc: 'Gestiona valores, operaciones y memoria' },
+    { name: 'Diagnostic', desc: 'Notas de diagnóstico por categoría de error' },
+  ]
+
+  return (
+    <>
+      <section id="que-es" className="section" aria-labelledby="que-es-title">
+        <div className="container">
+          <SectionTitle 
+            id="que-es-title"
+            title="Qué es TzLang" 
+            description="TzLang es un lenguaje de programación interpretado con sintaxis en español, pensado para aprender los conceptos fundamentales de la programación sin la barrera del inglés."
+          />
+          <p>
+            Está construido desde cero en C11, sin dependencias externas ni generadores de parsers. 
+            Todas las piezas son propias:
+          </p>
+          <div className="components-grid">
+            {components.map((comp, i) => (
+              <div key={comp.name} className="component-card">
+                <div className="component-number">{i + 1}</div>
+                <h3>{comp.name}</h3>
+                <p>{comp.desc}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-lg">
+            Los programas se escriben en archivos con extensión <code>.tz</code> y se ejecutan con el comando <code>tz</code>.
+          </p>
+        </div>
+      </section>
+
+      <section id="sintaxis-ejemplo" className="section section-alt" aria-labelledby="sintaxis-ejemplo-title">
+        <div className="container">
+          <SectionTitle 
+            id="sintaxis-ejemplo-title"
+            title="La sintaxis en español es el punto de partida" 
+            description="Lo que distingue a TzLang es que las comparaciones se escriben como se dicen en voz alta. Quien está aprendiendo no necesita traducir mentalmente <code>>=</code> antes de entender qué hace su programa:"
+          />
+          
+          <CodeBlock code={CODE_COMPARISON} />
+          
+          <p>Las seis formas comparativas son parte del lenguaje, no azúcar sintáctico añadido después:</p>
+          <ComparisonTable />
+          
+          <p>Ambas notaciones son intercambiables y se pueden mezclar. La forma simbólica sigue disponible para quien ya la conoce:</p>
+          <CodeBlock code={CODE_MIXED} />
+          
+          <p>Los operadores lógicos siguen la misma idea: <code>y</code>, <code>o</code> y <code>no</code>.</p>
+          <CodeBlock code={CODE_LOGICAL} />
+        </div>
+      </section>
+    </>
+  )
+}
+
+function SintaxisPage() {
+  // Built-in functions data for detailed section
+  const builtinFunctions = [
+    { name: 'largo(x)', desc: 'Longitud de texto, lista o diccionario', example: 'largo("Hola")', result: '4' },
+    { name: 'tipo(x)', desc: 'Nombre del tipo', example: 'tipo(3.14)', result: 'decimal' },
+    { name: 'texto(x)', desc: 'Convierte a texto', example: 'texto(42)', result: '"42"' },
+    { name: 'numero(x)', desc: 'Convierte a número entero', example: 'numero("42")', result: '42' },
+    { name: 'decimal(x)', desc: 'Convierte a decimal', example: 'decimal(7)', result: '7' },
+    { name: 'agregar(lista, x)', desc: 'Añade un elemento al final (modifica la lista)', example: 'agregar(l, 4)', result: '—' },
+    { name: 'eliminar(x, k)', desc: 'Borra por índice o por clave (modifica la estructura)', example: 'eliminar(l, 0)', result: '—' },
+    { name: 'contiene(x, v)', desc: '¿Contiene el valor o la clave?', example: 'contiene(l, 99)', result: 'verdadero' },
+    { name: 'unir(lista, sep)', desc: 'Une una lista de textos', example: 'unir(["a","b"], "-")', result: '"a-b"' },
+    { name: 'separar(txt, sep)', desc: 'Parte un texto en lista', example: 'separar("a,b", ",")', result: '["a", "b"]' },
+    { name: 'mayusculas(txt)', desc: 'Pasa a mayúsculas', example: 'mayusculas("hola")', result: '"HOLA"' },
+    { name: 'minusculas(txt)', desc: 'Pasa a minúsculas', example: 'minusculas("HOLA")', result: '"hola"' },
+    { name: 'absoluto(x)', desc: 'Valor absoluto', example: 'absoluto(-7)', result: '7' },
+    { name: 'redondear(x)', desc: 'Redondea a numero', example: 'redondear(3.7)', result: '4' },
+    { name: 'claves(dic)', desc: 'Lista de claves', example: 'claves(p)', result: '["nombre"]' },
+    { name: 'valores(dic)', desc: 'Lista de valores', example: 'valores(p)', result: '["Carlos"]' },
+    { name: 'entrada(msg)', desc: 'Pide un dato por teclado (devuelve texto)', example: 'entrada("Nombre: ")', result: '"Ana"' },
+  ]
+
+  return (
+    <>
+      <section id="lenguaje" className="section" aria-labelledby="lenguaje-title">
+        <div className="container">
+          <SectionTitle id="lenguaje-title" title="Referencia del lenguaje" />
+          
+          <div className="language-grid">
+            <LangCard title="Variables">
+              <CodeBlock code={CODE_VARIABLES} />
+            </LangCard>
+            <LangCard title="Tipos de datos">
+              <CodeBlock code={CODE_TIPOS} />
+            </LangCard>
+            <LangCard title="Secuencias de escape">
+              <CodeBlock code={CODE_ESCAPES} />
+            </LangCard>
+            <LangCard title="Operadores aritméticos">
+              <CodeBlock code={CODE_OPERADORES} />
+            </LangCard>
+            <LangCard title="Condicionales">
+              <CodeBlock code={CODE_CONDICIONALES} />
+            </LangCard>
+            <LangCard title="Bucles">
+              <CodeBlock code={CODE_BUCLES} />
+            </LangCard>
+            <LangCard title="Romper y continuar">
+              <CodeBlock code={CODE_BREAK_CONTINUE} />
+            </LangCard>
+            <LangCard title="Funciones">
+              <CodeBlock code={CODE_FUNCIONES} />
+            </LangCard>
+            <LangCard title="Listas">
+              <CodeBlock code={CODE_LISTAS} />
+            </LangCard>
+            <LangCard title="Diccionarios">
+              <CodeBlock code={CODE_DICCIONARIOS} />
+            </LangCard>
+            <LangCard title="Copia profunda">
+              <CodeBlock code={CODE_COPIA} />
+            </LangCard>
+            <LangCard title="Entrada del usuario">
+              <CodeBlock code={CODE_ENTRADA} />
+            </LangCard>
+            <LangCard title="Errores">
+              <CodeBlock code={CODE_ERRORS} />
+            </LangCard>
+          </div>
+        </div>
+      </section>
+
+      <section id="builtins" className="section section-alt" aria-labelledby="builtins-title">
+        <div className="container">
+          <SectionTitle 
+            id="builtins-title"
+            title="Funciones incorporadas (17)" 
+            description="TzLang incluye 17 funciones integradas. <code>agregar</code>, <code>eliminar</code> y <code>entrada</code> modifican/leen estado; el resto devuelven un valor nuevo."
+          />
+          
+          <div className="builtins-grid">
+            {builtinFunctions.map((fn) => (
+              <article key={fn.name} className="builtin-card">
+                <header className="builtin-header">
+                  <code className="builtin-name">{fn.name}</code>
+                  <span className="builtin-result">{fn.result}</span>
+                </header>
+                <p className="builtin-desc">{fn.desc}</p>
+                <div className="builtin-example">
+                  <code>{fn.example}</code>
+                  <span className="example-arrow">→</span>
+                  <code className="example-result">{fn.result}</code>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="ejemplos" className="section section-alt" aria-labelledby="ejemplos-title">
+        <div className="container">
+          <SectionTitle 
+            id="ejemplos-title"
+            title="Un programa completo" 
+            description="Este ejemplo reúne funciones, diccionarios, listas, bucles y condicionales con <code>sino si</code>."
+          />
+          <CodeBlock code={CODE_FULL} />
+        </div>
+      </section>
+    </>
+  )
+}
+
+function DesarrolloPage() {
+  return (
+    <>
+      <section id="arquitectura" className="section" aria-labelledby="arquitectura-title">
+        <div className="container">
+          <SectionTitle 
+            id="arquitectura-title"
+            title="Arquitectura" 
+            description="El intérprete procesa cada programa en una tubería de etapas bien separadas, cada una en su propio directorio dentro de <code>src/</code>:"
+          />
+          
+          <Pipeline />
+          
+          <h3 className="mt-lg">Estructura del proyecto</h3>
+          <CodeBlock code={CODE_PROJECT} />
+        </div>
+      </section>
+
+      <section id="desarrollo" className="section section-alt" aria-labelledby="desarrollo-title">
+        <div className="container">
+          <SectionTitle id="desarrollo-title" title="Desarrollo y Pruebas" />
+          
+          <h3>Comandos principales (Makefile)</h3>
+          <CommandTable />
+          
+          <p className="mt-md">El compilador se puede elegir pasando la variable <code>CC</code>, por ejemplo <code>make CC=clang</code>.</p>
+
+          <h3>Pruebas</h3>
+          <p>La suite principal ejecuta el binario real sobre archivos <code>.tz</code> y compara la salida y el código de salida con lo esperado. No enlaza contra funciones internas de C: prueba el lenguaje tal y como lo ve un usuario.</p>
+          <CodeBlock code={CODE_TESTS} />
+          <p>Las <strong>171 pruebas</strong> cubren aritmética, desbordamiento de enteros, conversiones, textos, listas, diccionarios, indexación anidada, control de flujo, funciones, recursión, scope, errores de lexer, parser e intérprete, y el comportamiento de la CLI (BOM UTF-8, CRLF, archivos vacíos, extensiones y argumentos inválidos).</p>
+
+          <h3>Sanitizers</h3>
+          <p><code>make asan</code> compila un binario aparte con <strong>AddressSanitizer</strong> y <strong>UndefinedBehaviorSanitizer</strong>, y pasa por él la misma suite completa. Sirve para detectar use-after-free, dobles liberaciones, desbordamientos de búfer y comportamiento indefinido.</p>
+          <p>Los tres binarios conviven sin pisarse: <code>build/tzc</code>, <code>build/tzc-debug</code> y <code>build/tzc-asan</code>.</p>
+
+          <h3>Education</h3>
+          <p>El directorio <code>education/</code> contiene <strong>5 lecciones</strong> progresivas. Cada una es un programa <code>.tz</code> acompañado de un archivo <code>.expected</code> con su salida exacta, de modo que el material didáctico se verifica automáticamente:</p>
+          <CodeBlock code={CODE_EDUCATION} />
+          <p>Esta suite es independiente de la principal y es más estricta: exige código de salida 0, stderr vacío y coincidencia exacta de stdout.</p>
+        </div>
+      </section>
+
+      <section id="novedades" className="section" aria-labelledby="novedades-title">
+        <div className="container">
+          <SectionTitle id="novedades-title" title="Novedades por versión" />
+          
+          <div className="changelog">
+            <article className="version-entry">
+              <header className="version-header">
+                <h3>v0.3.4</h3>
+                <time>2024</time>
+              </header>
+              <ul className="changes-list">
+                <li><strong>Nuevo operador módulo <code>%</code></strong> para resto de división entera.</li>
+                <li><strong>Índices negativos en listas</strong>: <code>lista[-1]</code> accede al último elemento.</li>
+                <li><strong>Concatenación de listas con <code>+</code></strong>: <code>[1,2] + [3,4]</code> → <code>[1,2,3,4]</code>.</li>
+                <li><strong>Secuencias de escape en textos</strong>: <code>\n</code> (salto), <code>\t</code> (tab), <code>\"</code> (comillas), <code>\\</code> (barra).</li>
+                <li><strong>Condicionales encadenadas con <code>sino si</code></strong>: permite múltiples ramas con un solo <code>fin</code>.</li>
+                <li><strong>Palabras reservadas</strong>: <code>y</code>, <code>o</code>, <code>no</code>, <code>si</code>, <code>mientras</code> ya no pueden usarse como nombres de variable.</li>
+                <li><strong>Límites de seguridad</strong>: máximo 2000 llamadas de función anidadas y 500 niveles de expresión para evitar desbordamiento de pila.</li>
+                <li><strong>Función <code>entrada()</code></strong> para leer entrada del usuario por teclado.</li>
+                <li><strong>Icono para archivos <code>.tz</code></strong> registrado en Windows, Linux y macOS.</li>
+                <li><strong>Mensajes de error amigables</strong>: explican el error y sugieren la corrección (ej. comillas simples → dobles).</li>
+                <li><strong>Notas de diagnóstico</strong> (<code>TZ_NOTAS</code>): frases explicativas bajo cada error técnico.</li>
+                <li><strong>5 lecciones en <code>education/</code></strong> con salida esperada verificada automáticamente.</li>
+              </ul>
+            </article>
+
+            <article className="version-entry">
+              <header className="version-header">
+                <h3>v0.3.0</h3>
+                <time>2024</time>
+              </header>
+              <ul className="changes-list">
+                <li>Sintaxis comparativa en español (<code>es mayor que</code>, <code>es menor o igual que</code>, etc.).</li>
+                <li>Operadores lógicos en español: <code>y</code>, <code>o</code>, <code>no</code>.</li>
+                <li>Condicionales con <code>si</code>, <code>sino</code>, <code>fin</code>.</li>
+                <li>Bucles <code>mientras</code> y <code>para cada</code>.</li>
+                <li>Funciones con <code>funcion</code>, <code>retornar</code>, recursión y scope léxico.</li>
+                <li>Listas y diccionarios con copia profunda.</li>
+                <li>16 funciones incorporadas.</li>
+                <li>CLI con códigos de salida diferenciados (0, 1, 2, 3).</li>
+                <li>Suite de 138 pruebas.</li>
+                <li>CI en Linux, macOS y Windows.</li>
+              </ul>
+            </article>
+
+            <article className="version-entry">
+              <header className="version-header">
+                <h3>v0.1.0</h3>
+                <time>2024</time>
+              </header>
+              <ul className="changes-list">
+                <li>Léxico, parser, AST, intérprete y runtime propios en C11.</li>
+                <li>Variables y 7 tipos de datos.</li>
+                <li>Operadores aritméticos, comparación y lógicos.</li>
+                <li>Estructuras de control básicas.</li>
+                <li>Primera suite de pruebas.</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+    </>
+  )
+}
+
+// ============================================
+// MAIN APP WITH ROUTING
+// ============================================
+
+function Layout({ children }: { children: React.ReactNode }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  // Matrix pixel rain effect
+  useEffect(() => {
+    const canvas = document.createElement('canvas')
+    canvas.className = 'matrix-bg'
+    canvas.style.position = 'fixed'
+    canvas.style.top = '0'
+    canvas.style.left = '0'
+    canvas.style.width = '100%'
+    canvas.style.height = '100%'
+    canvas.style.pointerEvents = 'none'
+    canvas.style.zIndex = '0'
+    canvas.style.opacity = '0.35'
+    document.body.appendChild(canvas)
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    let width = 0
+    let height = 0
+    let columns = 0
+    let drops: number[] = []
+
+    const resize = () => {
+      width = window.innerWidth
+      height = window.innerHeight
+      canvas.width = width
+      canvas.height = height
+      const fontSize = 5
+      columns = Math.floor(width / fontSize)
+      drops = Array(columns).fill(0).map(() => Math.random() * -height)
+    }
+
+    resize()
+    window.addEventListener('resize', resize)
+
+    const colors = [
+      'rgba(168, 85, 247, 0.9)',   // purple - bright
+      'rgba(192, 132, 252, 0.9)',  // purple-400 - brighter
+      'rgba(221, 214, 254, 0.85)', // purple-200 - very bright
+      'rgba(245, 243, 255, 0.8)',  // purple-100 - almost white
+      'rgba(232, 232, 240, 0.8)',  // light
+    ]
+
+    const draw = () => {
+      if (!ctx) return
+      
+      // Semi-transparent background for trail effect
+      ctx.fillStyle = 'rgba(13, 13, 20, 0.1)'
+      ctx.fillRect(0, 0, width, height)
+
+      const fontSize = 5
+      
+      for (let i = 0; i < columns; i++) {
+        // Random pixel color
+        const color = colors[Math.floor(Math.random() * colors.length)]
+        ctx.fillStyle = color
+        
+        // Draw a small square (pixel)
+        const x = i * fontSize
+        const y = drops[i] * fontSize
+        
+        // Draw 1-3 pixel blocks
+        const blockHeight = fontSize * (Math.random() * 2 + 1)
+        ctx.fillRect(x, y, fontSize, blockHeight)
+
+        // Move drop down
+        if (y > height) {
+          drops[i] = 0
+        } else {
+          drops[i]++
+        }
+        
+        // Random reset
+        if (Math.random() > 0.995) {
+          drops[i] = 0
+        }
+      }
+    }
+
+    const interval = setInterval(draw, 50)
+    
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('resize', resize)
+      document.body.removeChild(canvas)
+    }
+  }, [])
+
+  useEffect(() => {
     const navToggle = document.querySelector('.nav-toggle')
     const navMenu = document.getElementById('nav-menu')
     
-    if (navToggle && navMenu) {
-      navToggle.addEventListener('click', () => {
-        const isOpen = navMenu.classList.toggle('open')
-        navToggle.setAttribute('aria-expanded', isOpen.toString())
-      })
-
-      // Close menu when clicking a link
-      navMenu.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', () => {
-          navMenu.classList.remove('open')
-          navToggle.setAttribute('aria-expanded', 'false')
-        })
-      })
+    const handleToggle = () => {
+      const isOpen = !mobileMenuOpen
+      setMobileMenuOpen(isOpen)
+      navToggle?.setAttribute('aria-expanded', isOpen.toString())
+      navMenu?.classList.toggle('open', isOpen)
     }
-  }, [])
+
+    navToggle?.addEventListener('click', handleToggle)
+    
+    navMenu?.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        setMobileMenuOpen(false)
+        navToggle?.setAttribute('aria-expanded', 'false')
+        navMenu?.classList.remove('open')
+      })
+    })
+
+    return () => {
+      navToggle?.removeEventListener('click', handleToggle)
+    }
+  }, [mobileMenuOpen])
 
   return (
     <>
       <Header />
-      <main>
-        <Hero />
-        <WhatIs />
-        <SpanishSyntax />
-        <Examples />
-        <Installation />
-        <LanguageReference />
-        <Architecture />
-        <Development />
-        <Roadmap />
-      </main>
+      <main>{children}</main>
       <Footer />
     </>
+  )
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={
+          <Layout>
+            <HomePage />
+          </Layout>
+        } />
+        <Route path="/que-es" element={
+          <Layout>
+            <QueEsPage />
+          </Layout>
+        } />
+        <Route path="/sintaxis" element={
+          <Layout>
+            <SintaxisPage />
+          </Layout>
+        } />
+        <Route path="/desarrollo" element={
+          <Layout>
+            <DesarrolloPage />
+          </Layout>
+        } />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
