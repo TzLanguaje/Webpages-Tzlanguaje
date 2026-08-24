@@ -1,0 +1,11 @@
+const fs = require('fs');
+let content = fs.readFileSync('src/App.tsx', 'utf8');
+
+// Replace all remaining < and > in code tags
+content = content.replace(/<code><\/code>/g, "<code>{'<'}</code>");
+content = content.replace(/<code>><\/code>/g, "<code>{'>'}</code>");
+content = content.replace(/<code><=<\/code>/g, "<code><=</code>");
+content = content.replace(/<code>>=<\/code>/g, "<code>>=</code>");
+
+fs.writeFileSync('src/App.tsx', content);
+console.log('Done');
