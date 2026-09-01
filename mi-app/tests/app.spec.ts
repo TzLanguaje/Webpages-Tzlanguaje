@@ -37,9 +37,9 @@ test.describe('TzLang Multi-page Site', () => {
 
     test('should have navigation with all pages', async ({ page }) => {
       const navLinks = page.locator('.nav-links a')
-      await expect(navLinks).toHaveCount(4)
+      await expect(navLinks).toHaveCount(5)
       
-      const expectedPages = ['Inicio', 'Qué es TzLang', 'Sintaxis', 'Desarrollo']
+      const expectedPages = ['Inicio', 'Qué es TzLang', 'Sintaxis', 'Primeros pasos', 'Desarrollo']
       
       for (const pageName of expectedPages) {
         await expect(navLinks.filter({ hasText: pageName })).toBeVisible()

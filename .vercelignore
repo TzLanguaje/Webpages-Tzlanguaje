@@ -19,5 +19,5 @@ mi-app/LICENSE
 .agents/
 opencode.json
 skills-lock.json
-# Medios sin procesar
-mi-app/media/
+# Medios sin procesar (ruta completa para no afectar a public/media/)
+/mi-app/media/
