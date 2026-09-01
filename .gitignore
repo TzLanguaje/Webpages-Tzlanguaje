@@ -9,3 +9,6 @@ mi-app/media/
 # OS
 .DS_Store
 Thumbs.db
+
+# Auditorias locales (capturas, scripts)
+mi-app/audit/
