@@ -21,7 +21,7 @@ test.describe('TzLang Multi-page Site', () => {
       
       const badge = hero.locator('.badge')
       await expect(badge.first()).toContainText('CI')
-      await expect(badge.nth(1)).toContainText('Versión 0.4.2')
+      await expect(badge.nth(1)).toContainText('Versión 0.5.0')
     })
 
     test('should have animated code examples in hero', async ({ page }) => {
@@ -56,22 +56,22 @@ test.describe('TzLang Multi-page Site', () => {
       // Check Windows link
       const windowsLink = table.locator('a[href*="windows-x86_64-setup.exe"]')
       await expect(windowsLink).toBeVisible()
-      await expect(windowsLink).toHaveAttribute('href', 'https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.4.2/TzLang-v0.4.2-windows-x86_64-setup.exe')
+      await expect(windowsLink).toHaveAttribute('href', 'https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.5.0/TzLang-v0.5.0-windows-x86_64-setup.exe')
       
       // Check Mac link
       const macLink = table.locator('a[href*="macos.pkg"]')
       await expect(macLink).toBeVisible()
-await expect(macLink).toHaveAttribute('href', 'https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.4.2/TzLang-v0.4.2-macos.pkg')
+await expect(macLink).toHaveAttribute('href', 'https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.5.0/TzLang-v0.5.0-macos.pkg')
       
       // Check Debian link
       const debLink = table.locator('a[href*="amd64.deb"]')
       await expect(debLink).toBeVisible()
-      await expect(debLink).toHaveAttribute('href', 'https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.4.2/tzlang_0.4.2_amd64.deb')
+      await expect(debLink).toHaveAttribute('href', 'https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.5.0/tzlang_0.5.0_amd64.deb')
       
       // Check RPM link
       const rpmLink = table.locator('a[href*="x86_64.rpm"]')
       await expect(rpmLink).toBeVisible()
-      await expect(rpmLink).toHaveAttribute('href', 'https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.4.2/tzlang-0.4.2-1.x86_64.rpm')
+      await expect(rpmLink).toHaveAttribute('href', 'https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.5.0/tzlang-0.5.0-1.x86_64.rpm')
     })
     
     test('should have roadmap section on home', async ({ page }) => {
@@ -81,11 +81,11 @@ await expect(macLink).toHaveAttribute('href', 'https://github.com/TzLanguaje/TzL
       await expect(page.locator('text=Paso de argumentos').first()).toBeVisible()
       await expect(page.locator('text=Ausencias del lenguaje')).toBeVisible()
       
-      await expect(page.locator('text=Lo terminado en la 0.4.2')).toBeVisible()
+      await expect(page.locator('text=Lo terminado en la 0.5.0')).toBeVisible()
       await expect(page.locator('li:has-text("Lexer, parser, AST")').first()).toBeVisible()
       
       await expect(page.locator('text=Lo siguiente')).toBeVisible()
-      await expect(page.locator('text=Soporte real de Unicode').first()).toBeVisible()
+      await expect(page.locator('text=Normalización de textos Unicode').first()).toBeVisible()
     })
 
     test('should have footer with GitHub link', async ({ page }) => {

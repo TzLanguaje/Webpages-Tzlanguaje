@@ -87,7 +87,7 @@ imprimir "Aprobados: " + texto(aprobados) + " de " + texto(largo(estudiantes))
 // Aprobados: 2 de 3`
 
 const CODE_CHECK = `tz --version
-# TzLang 0.4.2`
+# TzLang 0.5.0`
 
 const CODE_VARIABLES = `variable nombre = "Carlos"
 variable edad = 20
@@ -232,11 +232,11 @@ imprimir "El año que viene tendrás " + texto(edad + 1)
 // El año que viene tendrás 31`
 
 const CODE_ERRORS = `imprimir 10 / 0
-// Error: división por cero.
+// Error en linea 1: división por cero.
 // La ejecución falló.
 
 imprimir desconocida
-// Error: variable 'desconocida' no existe.
+// Error en linea 1: variable 'desconocida' no existe.
 // La ejecución falló.`
 
 const CODE_PROJECT = `TzLang/
@@ -287,8 +287,8 @@ const CODE_PROJECT = `TzLang/
 
 const CODE_TESTS = `make test
 ========================================
-Tests:  163
-Passed: 163
+Tests:  244
+Passed: 244
 Failed: 0
 ========================================
 
@@ -686,7 +686,7 @@ function Pipeline() {
 function CommandTable() {
   const commands = [
     { cmd: 'make', desc: 'Compila <code>build/tzc</code>' },
-    { cmd: 'make test', desc: 'Compila y ejecuta la suite principal (173 tests)' },
+    { cmd: 'make test', desc: 'Compila y ejecuta la suite principal (244 tests)' },
     { cmd: 'make test-education', desc: 'Valida el material de <code>education/</code> (5 lecciones)' },
     { cmd: 'make debug', desc: 'Genera <code>build/tzc-debug</code> con <code>-g -O0</code>' },
     { cmd: 'make asan', desc: 'Genera <code>build/tzc-asan</code> y pasa la suite con sanitizers' },
@@ -724,9 +724,9 @@ function HomePage() {
           <div className="hero-content">
             <div className="badges" role="list" aria-label="Información del proyecto">
               <span className="badge" role="listitem">CI</span>
-              <span className="badge" role="listitem">Versión 0.4.2</span>
+              <span className="badge" role="listitem">Versión 0.5.0</span>
               <span className="badge" role="listitem">C11</span>
-              <span className="badge" role="listitem">173 tests</span>
+              <span className="badge" role="listitem">249 tests</span>
               <span className="badge" role="listitem">Licencia MIT</span>
               <span className="badge" role="listitem">Multiplataforma</span>
             </div>
@@ -750,15 +750,15 @@ function HomePage() {
           />
           
           <h3>Descarga directa (recomendado)</h3>
-<p>Todos los instaladores están en la <a href="https://github.com/TzLanguaje/TzLanguaje/releases/tag/v0.4.2" target="_blank" rel="noopener noreferrer">página de descargas v0.4.2</a>. Baja hasta <strong>Assets</strong> y elige tu archivo:</p>
+<p>Todos los instaladores están en la <a href="https://github.com/TzLanguaje/TzLanguaje/releases/tag/v0.5.0" target="_blank" rel="noopener noreferrer">página de descargas v0.5.0</a>. Baja hasta <strong>Assets</strong> y elige tu archivo:</p>
 
           <table className="simple-table">
             <thead><tr><th>Si usas…</th><th>Descarga este archivo</th></tr></thead>
             <tbody>
-              <tr><td><strong>Windows</strong></td><td><a href="https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.4.2/TzLang-v0.4.2-windows-x86_64-setup.exe" target="_blank" rel="noopener noreferrer"><code>TzLang-v0.4.2-windows-x86_64-setup.exe</code></a></td></tr>
-              <tr><td><strong>Mac</strong> (Intel o M1/M2/M3)</td><td><a href="https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.4.2/TzLang-v0.4.2-macos.pkg" target="_blank" rel="noopener noreferrer"><code>TzLang-v0.4.2-macos.pkg</code></a></td></tr>
-              <tr><td><strong>Ubuntu, Debian, Mint</strong></td><td><a href="https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.4.2/tzlang_0.4.2_amd64.deb" target="_blank" rel="noopener noreferrer"><code>tzlang_0.4.2_amd64.deb</code></a></td></tr>
-              <tr><td><strong>Fedora, RHEL, openSUSE</strong></td><td><a href="https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.4.2/tzlang-0.4.2-1.x86_64.rpm" target="_blank" rel="noopener noreferrer"><code>tzlang-0.4.2-1.x86_64.rpm</code></a></td></tr>
+              <tr><td><strong>Windows</strong></td><td><a href="https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.5.0/TzLang-v0.5.0-windows-x86_64-setup.exe" target="_blank" rel="noopener noreferrer"><code>TzLang-v0.5.0-windows-x86_64-setup.exe</code></a></td></tr>
+              <tr><td><strong>Mac</strong> (Intel o M1/M2/M3)</td><td><a href="https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.5.0/TzLang-v0.5.0-macos.pkg" target="_blank" rel="noopener noreferrer"><code>TzLang-v0.5.0-macos.pkg</code></a></td></tr>
+              <tr><td><strong>Ubuntu, Debian, Mint</strong></td><td><a href="https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.5.0/tzlang_0.5.0_amd64.deb" target="_blank" rel="noopener noreferrer"><code>tzlang_0.5.0_amd64.deb</code></a></td></tr>
+              <tr><td><strong>Fedora, RHEL, openSUSE</strong></td><td><a href="https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.5.0/tzlang-0.5.0-1.x86_64.rpm" target="_blank" rel="noopener noreferrer"><code>tzlang-0.5.0-1.x86_64.rpm</code></a></td></tr>
             </tbody>
           </table>
           <p className="note"><strong>ARM / Raspberry Pi:</strong> cambia <code>amd64</code> por <code>arm64</code> (en <code>.deb</code>) o <code>x86_64</code> por <code>aarch64</code> (en <code>.rpm</code>).</p>
@@ -766,7 +766,7 @@ function HomePage() {
           <h3 className="mt-lg">Comprueba que funciona</h3>
           <p>Abre una terminal <strong>nueva</strong> (importante: abierta <em>después</em> de instalar) y escribe:</p>
           <CodeBlock code={CODE_CHECK} />
-          <p>Si responde <code>TzLang 0.4.2</code>, ya está instalado. Si dice "orden no encontrada", cierra y abre una terminal nueva, o en Windows vuelve a pasar el instalador con la casilla del PATH marcada.</p>
+          <p>Si responde <code>TzLang 0.5.0</code>, ya está instalado. Si dice "orden no encontrada", cierra y abre una terminal nueva, o en Windows vuelve a pasar el instalador con la casilla del PATH marcada.</p>
 
           <h3 className="mt-md">Tu primer programa</h3>
           <p>Crea <code>hola.tz</code> con:</p>
@@ -782,12 +782,12 @@ function HomePage() {
           
           <h3>Limitaciones actuales</h3>
           <ul className="limitations-list">
-            <li dangerouslySetInnerHTML={{ __html: '<strong>Unicode.</strong> Los textos se tratan como bytes, no como caracteres. <code>largo("año")</code> devuelve <code>4</code> en lugar de <code>3</code>, y <code>mayusculas("año")</code> devuelve <code>AñO</code>. Es la limitación más visible para un lenguaje en español.' }} />
+            <li dangerouslySetInnerHTML={{ __html: '<strong>Unicode parcial.</strong> Desde la 0.5.0, <code>largo()</code>, <code>mayusculas()</code> y <code>minusculas()</code> entienden tildes y eñes. Lo que falta: Unicode completo (emojis formados por varios caracteres), normalización de textos y orden alfabético según el idioma.' }} />
             <li dangerouslySetInnerHTML={{ __html: '<strong>Paso de argumentos por copia.</strong> Las funciones reciben <em>copias</em> de listas y diccionarios, no referencias. Modificar una dentro de una función no afecta a la de fuera; hay que devolverla. Es lo contrario de Python/JS.' }} />
             <li dangerouslySetInnerHTML={{ __html: '<strong>Ausencias del lenguaje.</strong> No hay módulos ni importaciones, clases, funciones anónimas, generadores, conjuntos, tuplas, recolector de basura ni enteros de precisión arbitraria.' }} />
           </ul>
 
-          <h3>Lo terminado en la 0.4.2</h3>
+          <h3>Lo terminado en la 0.5.0</h3>
           <ul className="checklist">
             <li>Lexer, parser, AST, intérprete y runtime propios en C11</li>
             <li>Variables y los siete tipos (<code>numero</code>, <code>decimal</code>, <code>texto</code>, <code>booleano</code>, <code>nulo</code>, <code>lista</code>, <code>diccionario</code>)</li>
@@ -802,26 +802,33 @@ function HomePage() {
             <li>CLI con códigos de salida diferenciados (0, 1, 2, 3)</li>
             <li><strong>Notas de diagnóstico</strong> por categoría de error (<code>TZ_NOTAS</code>)</li>
             <li><strong>5 lecciones</strong> en <code>education/</code> con salida esperada</li>
-            <li>Suite de <strong>173 pruebas</strong> verde también bajo ASan y UBSan</li>
+            <li>Suite de <strong>249 pruebas</strong> verde también bajo ASan y UBSan</li>
             <li>CI que compila y prueba en <strong>Linux, macOS y Windows</strong></li>
             <li><strong>Instaladores nativos</strong> (.pkg, .exe, .deb, .rpm) publicados automáticamente</li>
             <li>Homebrew, Scoop, npm publicados en cada versión</li>
-            <li>Extensión <strong>VS Code</strong> con icono y snippets</li>
+            <li>Extensión <strong>VS Code</strong> con icono, snippets y <strong>coloreado de sintaxis</strong></li>
             <li><strong>Icono para archivos .tz</strong> en Windows, Linux, macOS</li>
             <li><strong>Mensajes de error amigables</strong> con sugerencias de corrección</li>
-            <li><strong>Notas de diagnóstico</strong> por categoría de error (<code>TZ_NOTAS</code>)</li>
-            <li><strong>5 lecciones</strong> en <code>education/</code> con salida esperada verificada</li>
+          </ul>
+
+          <h3 className="mt-md">Novedades de la 0.5.0 (agosto 2026)</h3>
+          <ul className="checklist">
+            <li><strong>Errores con número de línea</strong> en todas las etapas (lexer, parser e intérprete)</li>
+            <li><strong>Evaluación en cortocircuito</strong> de los operadores <code>y</code> y <code>o</code></li>
+            <li><strong>Orden alfabético de textos</strong></li>
+            <li><code>largo()</code>, <code>mayusculas()</code> y <code>minusculas()</code> <strong>conscientes de tildes y eñes</strong></li>
+            <li>Errores en rojo y mensajes que dicen qué escribir (0.4.3) y <strong>coloreado de sintaxis</strong> en VS Code (0.4.4)</li>
+            <li>Publicada el <strong>25 de agosto de 2026</strong> (v0.4.3 y v0.4.4 el 24 de agosto)</li>
           </ul>
 
           <h3>Lo siguiente (por prioridad)</h3>
           <ol className="roadmap-list">
-            <li><span className="priority">1</span>Soporte real de Unicode en textos y funciones de cadena</li>
-            <li><span className="priority">2</span>Seguir ampliando <code>education/</code> con más lecciones y ejercicios</li>
-            <li><span className="priority">3</span>Mensajes de error con número de línea y contexto en todas las etapas</li>
+            <li><span className="priority">1</span>Orden alfabético según el idioma, para que <code>"año"</code> se ordene donde toca y no detrás de todas las palabras sin tilde</li>
+            <li><span className="priority">2</span>Normalización de textos Unicode</li>
+            <li><span className="priority">3</span>Seguir ampliando <code>education/</code> con más lecciones y ejercicios</li>
             <li><span className="priority">4</span>Decidir si el paso de argumentos debe seguir siendo por copia</li>
-            <li><span className="priority">5</span>Sistema de módulos</li>
-            <li><span className="priority">6</span>Extensión VS Code en el Marketplace</li>
-            <li><span className="priority">7</span>Soporte Unicode completo</li>
+            <li><span className="priority">5</span>Funciones anidadas con ámbito propio, si se demuestra que hacen falta</li>
+            <li><span className="priority">6</span>Sistema de módulos</li>
           </ol>
           <p className="note mt-md">No hay fechas comprometidas: es un proyecto en desarrollo.</p>
 
@@ -1627,7 +1634,7 @@ function DesarrolloPage() {
           <h3>Pruebas</h3>
           <p>La suite principal ejecuta el binario real sobre archivos <code>.tz</code> y compara la salida y el código de salida con lo esperado. No enlaza contra funciones internas de C: prueba el lenguaje tal y como lo ve un usuario.</p>
           <CodeBlock code={CODE_TESTS} />
-          <p>Las <strong>173 pruebas</strong> cubren aritmética, desbordamiento de enteros, conversiones, textos, listas, diccionarios, indexación anidada, control de flujo, funciones, recursión, scope, errores de lexer, parser e intérprete, y el comportamiento de la CLI (BOM UTF-8, CRLF, archivos vacíos, extensiones y argumentos inválidos).</p>
+          <p>Las <strong>244 pruebas</strong> cubren aritmética, desbordamiento de enteros, conversiones, textos, listas, diccionarios, indexación anidada, control de flujo, funciones, recursión, scope, errores de lexer, parser e intérprete, y el comportamiento de la CLI (BOM UTF-8, CRLF, archivos vacíos, extensiones y argumentos inválidos).</p>
 
           <h3>Sanitizers</h3>
           <p><code>make asan</code> compila un binario aparte con <strong>AddressSanitizer</strong> y <strong>UndefinedBehaviorSanitizer</strong>, y pasa por él la misma suite completa. Sirve para detectar use-after-free, dobles liberaciones, desbordamientos de búfer y comportamiento indefinido.</p>
@@ -1647,7 +1654,7 @@ function DesarrolloPage() {
           <div className="changelog">
             <article className="version-entry">
               <header className="version-header">
-                <h3>v0.4.2</h3>
+                <h3>v0.5.0</h3>
                 <time>2024</time>
               </header>
               <ul className="changes-list">
