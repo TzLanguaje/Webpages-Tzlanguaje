@@ -1655,7 +1655,21 @@ function DesarrolloPage() {
             <article className="version-entry">
               <header className="version-header">
                 <h3>v0.5.0</h3>
-                <time>2024</time>
+                <time>25 de agosto de 2026</time>
+              </header>
+              <ul className="changes-list">
+                <li><strong>Errores con número de línea</strong> en todas las etapas: lexer, parser e intérprete.</li>
+                <li><strong>Evaluación en cortocircuito</strong> de los operadores lógicos <code>y</code> y <code>o</code>.</li>
+                <li><strong>Orden alfabético de textos</strong>.</li>
+                <li><strong>Unicode parcial</strong>: <code>largo()</code>, <code>mayusculas()</code> y <code>minusculas()</code> entienden tildes y eñes.</li>
+                <li>Suite de <strong>249 pruebas</strong> (244 principales + 5 educativas) verde bajo ASan y UBSan.</li>
+              </ul>
+            </article>
+
+            <article className="version-entry">
+              <header className="version-header">
+                <h3>v0.4.x</h3>
+                <time>21 – 24 de agosto de 2026</time>
               </header>
               <ul className="changes-list">
                 <li><strong>Nuevo operador módulo <code>%</code></strong> para resto de división entera.</li>
@@ -1667,7 +1681,8 @@ function DesarrolloPage() {
                 <li><strong>Límites de seguridad</strong>: máximo 2000 llamadas de función anidadas y 500 niveles de expresión para evitar desbordamiento de pila.</li>
                 <li><strong>Función <code>entrada()</code></strong> para leer entrada del usuario por teclado.</li>
                 <li><strong>Icono para archivos <code>.tz</code></strong> registrado en Windows, Linux y macOS.</li>
-                <li><strong>Mensajes de error amigables</strong>: explican el error y sugieren la corrección (ej. comillas simples → dobles).</li>
+                <li><strong>Extensión de VS Code</strong> incluida en cada release, con icono, snippets y <strong>coloreado de sintaxis</strong> (0.4.4).</li>
+                <li><strong>Mensajes de error amigables</strong> en rojo, que explican el error y sugieren la corrección (0.4.3).</li>
                 <li><strong>Notas de diagnóstico</strong> (<code>TZ_NOTAS</code>): frases explicativas bajo cada error técnico.</li>
                 <li><strong>5 lecciones en <code>education/</code></strong> con salida esperada verificada automáticamente.</li>
               </ul>
@@ -1676,7 +1691,7 @@ function DesarrolloPage() {
             <article className="version-entry">
               <header className="version-header">
                 <h3>v0.3.0</h3>
-                <time>2024</time>
+                <time>20 de agosto de 2026</time>
               </header>
               <ul className="changes-list">
                 <li>Sintaxis comparativa en español (<code>es mayor que</code>, <code>es menor o igual que</code>, etc.).</li>
@@ -1695,7 +1710,7 @@ function DesarrolloPage() {
             <article className="version-entry">
               <header className="version-header">
                 <h3>v0.1.0</h3>
-                <time>2024</time>
+                <time>19 de agosto de 2026</time>
               </header>
               <ul className="changes-list">
                 <li>Léxico, parser, AST, intérprete y runtime propios en C11.</li>
