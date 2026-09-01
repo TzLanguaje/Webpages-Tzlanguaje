@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom'
 import { useEffect, useState, useRef, useMemo } from 'react'
 import './App.css'
+import PrimerosPasosPage from './pages/PrimerosPasosPage'
+import { VideoPlayer } from './components/VideoPlayer'
 
 // ============================================
 // SHARED CONSTANTS & COMPONENTS
@@ -10,6 +12,7 @@ const navItems = [
   { path: '/', label: 'Inicio' },
   { path: '/que-es', label: 'Qué es TzLang' },
   { path: '/sintaxis', label: 'Sintaxis' },
+  { path: '/primeros-pasos', label: 'Primeros pasos' },
   { path: '/desarrollo', label: 'Desarrollo' },
 ]
 
@@ -913,12 +916,28 @@ function QueEsPage() {
           <p>Ambas notaciones son intercambiables y se pueden mezclar. La forma simbólica sigue disponible para quien ya la conoce:</p>
           <CodeBlock code={CODE_MIXED} />
           
-          <p>Los operadores lógicos siguen la misma idea: <code>y</code>, <code>o</code> y <code>no</code>.</p>
-          <CodeBlock code={CODE_LOGICAL} />
-        </div>
-      </section>
-    </>
-  )
+<p>Los operadores lógicos siguen la misma idea: <code>y</code>, <code>o</code> y <code>no</code>.</p>
+           <CodeBlock code={CODE_LOGICAL} />
+         </div>
+       </section>
+
+       <section id="video-demo" className="section section-alt" aria-labelledby="video-demo-title">
+         <div className="container">
+           <SectionTitle 
+             id="video-demo-title"
+             title="TzLang en acción" 
+             description="Mira cómo se ve la sintaxis de TzLang en acción con un ejemplo completo."
+           />
+           <VideoPlayer
+             src="tzlang-codigo-en-espanol.mp4"
+             poster="tzlang-codigo-en-espanol-poster.jpg"
+             title="TzLang: Código en Español"
+             preload="metadata"
+           />
+         </div>
+       </section>
+     </>
+   )
 }
 
 // ============================================
@@ -1838,6 +1857,11 @@ function App() {
         <Route path="/desarrollo" element={
           <Layout>
             <DesarrolloPage />
+          </Layout>
+        } />
+        <Route path="/primeros-pasos" element={
+          <Layout>
+            <PrimerosPasosPage />
           </Layout>
         } />
       </Routes>

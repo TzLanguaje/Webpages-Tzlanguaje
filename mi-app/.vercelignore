@@ -45,3 +45,6 @@ yarn-error.log*
 *.md
 README.md
 LICENSE
+
+# Medios sin procesar (los de producción están en public/media/)
+media/

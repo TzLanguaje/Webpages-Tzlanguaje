@@ -15,3 +15,9 @@ mi-app/.idea/
 mi-app/*.log
 mi-app/README.md
 mi-app/LICENSE
+# AI agent / skills locales
+.agents/
+opencode.json
+skills-lock.json
+# Medios sin procesar
+mi-app/media/

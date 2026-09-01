@@ -1,0 +1,11 @@
+# AI agent / Skills (entorno local, no va al repo)
+.agents/
+opencode.json
+skills-lock.json
+
+# Medios locales / assets sin procesar (videos originales, SDK, etc.)
+mi-app/media/
+
+# OS
+.DS_Store
+Thumbs.db
