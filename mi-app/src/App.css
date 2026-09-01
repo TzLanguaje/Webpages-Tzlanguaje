@@ -2176,3 +2176,54 @@ figcaption {
     color: #333 !important;
   }
 }
+/* ============================================================
+   A11Y: overrides de contraste (WCAG 2.2 AA)
+   #a855f7 sobre el fondo oscuro da ~4.3:1; #c084fc da ~6.7:1
+   ============================================================ */
+:root {
+  --accent-text: #c084fc;
+}
+
+.badge,
+.concept-badge,
+.builtin-name,
+.builtin-example code,
+.step-box.highlighted,
+.tutorial-next a,
+button[aria-current="step"] .step-label {
+  color: var(--accent-text);
+}
+
+/* Skip link */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 1000;
+  padding: 0.75rem 1.25rem;
+  background: var(--accent-soft);
+  color: #fff;
+  border-radius: 0 0 0.5rem 0;
+  text-decoration: none;
+  font-weight: 600;
+}
+.skip-link:focus-visible {
+  left: 0;
+  outline: 2px solid var(--accent-text);
+}
+
+/* Focus visible global */
+:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+/* Codigo alineado a la izquierda */
+.animated-code-block code,
+.syntax-code-block code,
+.code-example pre {
+  text-align: left;
+}
+.builtin-example code:first-child {
+  color: var(--accent-text);
+}

@@ -10,7 +10,7 @@ export function SectionTitle({ title, description, id }: { title: string; descri
 export function CodeBlock({ code }: { code: string }) {
   return (
     <div className="code-example">
-      <pre><code>{code}</code></pre>
+      <pre tabIndex={0}><code>{code}</code></pre>
     </div>
   );
 }

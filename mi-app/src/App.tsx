@@ -624,7 +624,7 @@ function SectionTitle({ title, description, id }: { title: string; description?:
 function CodeBlock({ code }: { code: string }) {
   return (
     <div className="code-example">
-      <pre><code>{code}</code></pre>
+      <pre tabIndex={0}><code>{code}</code></pre>
     </div>
   )
 }
@@ -1344,14 +1344,12 @@ function SyntaxCodeAnimated() {
   return (
     <div className="syntax-animated-container" role="region" aria-label="Ejemplos de sintaxis TzLang">
       {/* Concept selector tabs */}
-      <div className="syntax-concept-tabs" role="tablist" aria-label="Conceptos de sintaxis">
+      <div className="syntax-concept-tabs" role="group" aria-label="Conceptos de sintaxis">
         {SYNTAX_CONCEPTS.map((concept, i) => (
           <button
             key={concept.id}
-            role="tab"
-            aria-selected={i === conceptIndex}
-            aria-controls={`panel-${concept.id}`}
             id={`tab-${concept.id}`}
+            aria-pressed={i === conceptIndex}
             className={`syntax-tab ${i === conceptIndex ? 'active' : ''}`}
             onClick={() => switchConcept(i)}
             disabled={isSwitching}
@@ -1850,8 +1848,9 @@ function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      <a href="#main-content" className="skip-link">Saltar al contenido principal</a>
       <Header />
-      <main>{children}</main>
+      <main id="main-content">{children}</main>
       <Footer />
     </>
   )
