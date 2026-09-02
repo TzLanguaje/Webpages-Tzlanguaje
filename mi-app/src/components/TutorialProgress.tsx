@@ -19,16 +19,25 @@ export function TutorialProgress({ steps }: TutorialProgressProps) {
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
     const observer = new IntersectionObserver(
-      (entries) => {
+      (entries: IntersectionObserverEntry[]) => {
+        // Encontrar la entrada que más se ve en viewport (ratio más alto)
+        let bestEntry: IntersectionObserverEntry | null = null;
+        let bestRatio = 0;
+        
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveStep(entry.target.id);
+          if (entry.isIntersecting && entry.intersectionRatio > bestRatio) {
+            bestRatio = entry.intersectionRatio;
+            bestEntry = entry;
           }
         });
+        
+        if (bestEntry && (bestEntry as IntersectionObserverEntry).target) {
+          setActiveStep((bestEntry as IntersectionObserverEntry).target.id);
+        }
       },
       {
-        rootMargin: isMobile ? '-80px 0px -50% 0px' : '-100px 0px -66% 0px',
-        threshold: 0,
+        rootMargin: isMobile ? '-80px 0px -50% 0px' : '-150px 0px -50% 0px',
+        threshold: [0, 0.1, 0.25, 0.5, 0.75, 1.0],
       }
     );
 
