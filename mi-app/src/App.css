@@ -1,4 +1,4 @@
-@font-face {
+﻿@font-face {
   font-family: 'HomeVideo';
   src: url('/fonts/HomeVideo-BLG6G.ttf') format('truetype');
   font-weight: 400;
@@ -912,7 +912,7 @@ tr:hover td {
 }
 
 .checklist li::before {
-  content: '✓';
+  content: 'âœ“';
   position: absolute;
   left: 0;
   color: var(--success);
@@ -1487,7 +1487,7 @@ figcaption {
   display: grid;
   grid-template-columns: 260px 1fr;
   gap: 2rem;
-  align-items: start;
+  align-items: stretch;
 }
 
 @media (max-width: 900px) {
@@ -1843,7 +1843,7 @@ figcaption {
   display: grid;
   grid-template-columns: 260px 1fr;
   gap: 2rem;
-  align-items: start;
+  align-items: stretch;
 }
 
 @media (max-width: 900px) {
@@ -2202,3 +2202,4 @@ html, body {
     -webkit-overflow-scrolling: touch;
   }
 }
+
