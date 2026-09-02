@@ -14,6 +14,7 @@ export function TutorialProgress({ steps }: TutorialProgressProps) {
   const [activeStep, setActiveStep] = useState<string>(steps[0]?.id || '');
   const observerRef = useRef<IntersectionObserver | null>(null);
   const stepElementsRef = useRef<Map<string, HTMLElement>>(new Map());
+  const sidebarRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
@@ -45,6 +46,15 @@ export function TutorialProgress({ steps }: TutorialProgressProps) {
     };
   }, [steps]);
 
+  useEffect(() => {
+    if (sidebarRef.current) {
+      const activeEl = sidebarRef.current.querySelector('.tutorial-step.active');
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [activeStep]);
+
   const scrollToStep = (stepId: string) => {
     const element = document.getElementById(stepId);
     if (element) {
@@ -53,7 +63,7 @@ export function TutorialProgress({ steps }: TutorialProgressProps) {
   };
 
   return (
-    <nav className="tutorial-progress" aria-label="Progreso del tutorial">
+    <nav ref={sidebarRef} className="tutorial-progress" aria-label="Progreso del tutorial">
       <h3 className="tutorial-progress-title">Primeros Pasos</h3>
       <ol className="tutorial-steps">
         {steps.map((step, index) => (
