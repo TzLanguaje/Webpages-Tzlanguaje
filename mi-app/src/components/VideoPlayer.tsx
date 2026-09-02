@@ -18,13 +18,6 @@ export function VideoPlayer({ src, poster, title, preload = 'metadata', classNam
         title={title}
         className="video-player"
       >
-        <track
-          kind="captions"
-          src={`/media/${src.replace('.mp4', '.vtt')}`}
-          srcLang="es"
-          label="Español"
-          default
-        />
         Tu navegador no soporta video HTML5.
       </video>
       <figcaption>{title}</figcaption>
