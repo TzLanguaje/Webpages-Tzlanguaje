@@ -12,49 +12,74 @@ interface TutorialProgressProps {
 
 export function TutorialProgress({ steps }: TutorialProgressProps) {
   const [activeStep, setActiveStep] = useState<string>(steps[0]?.id || '');
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const stepElementsRef = useRef<Map<string, HTMLElement>>(new Map());
   const sidebarRef = useRef<HTMLElement>(null);
+  const stepPositionsRef = useRef<Map<string, { top: number; bottom: number }>>(new Map());
+  const rafRef = useRef<number | null>(null);
 
+  // Cachear posiciones de cada paso
   useEffect(() => {
-    const isMobile = window.innerWidth < 768;
-    const observer = new IntersectionObserver(
-      (entries: IntersectionObserverEntry[]) => {
-        // Encontrar la entrada que más se ve en viewport (ratio más alto)
-        let bestEntry: IntersectionObserverEntry | null = null;
-        let bestRatio = 0;
-        
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.intersectionRatio > bestRatio) {
-            bestRatio = entry.intersectionRatio;
-            bestEntry = entry;
-          }
-        });
-        
-        if (bestEntry && (bestEntry as IntersectionObserverEntry).target) {
-          setActiveStep((bestEntry as IntersectionObserverEntry).target.id);
-        }
-      },
-      {
-        rootMargin: isMobile ? '-80px 0px -50% 0px' : '-150px 0px -50% 0px',
-        threshold: [0, 0.1, 0.25, 0.5, 0.75, 1.0],
-      }
-    );
-
-    observerRef.current = observer;
+    const positions = new Map<string, { top: number; bottom: number }>();
     steps.forEach((step) => {
       const element = document.getElementById(step.id);
       if (element) {
-        observer.observe(element);
-        stepElementsRef.current.set(step.id, element);
+        const rect = element.getBoundingClientRect();
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        positions.set(step.id, {
+          top: rect.top + scrollTop,
+          bottom: rect.bottom + scrollTop,
+        });
       }
     });
-
-    return () => {
-      observer.disconnect();
-    };
+    stepPositionsRef.current = positions;
   }, [steps]);
 
+  // Scroll spy basado en posición de scroll (más fiable que IntersectionObserver)
+  useEffect(() => {
+    let ticking = false;
+
+    const updateActiveStep = () => {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const viewportHeight = window.innerHeight;
+      const viewportCenter = scrollTop + viewportHeight / 2;
+
+      const positions = stepPositionsRef.current;
+      let bestStep = steps[0]?.id || '';
+      let bestDistance = Infinity;
+
+      positions.forEach((pos, id) => {
+        // Distancia desde el centro del viewport al centro del paso
+        const stepCenter = (pos.top + pos.bottom) / 2;
+        const distance = Math.abs(viewportCenter - stepCenter);
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestStep = id;
+        }
+      });
+
+      if (bestStep !== activeStep) {
+        setActiveStep(bestStep);
+      }
+      ticking = false;
+    };
+
+    const onScroll = () => {
+      if (!ticking) {
+        rafRef.current = requestAnimationFrame(updateActiveStep);
+        ticking = true;
+      }
+    };
+
+    // Calcular posiciones iniciales
+    updateActiveStep();
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [steps, activeStep]);
+
+  // Scroll interno del sidebar para mostrar paso activo
   useEffect(() => {
     if (sidebarRef.current) {
       const activeEl = sidebarRef.current.querySelector('.tutorial-step.active');
