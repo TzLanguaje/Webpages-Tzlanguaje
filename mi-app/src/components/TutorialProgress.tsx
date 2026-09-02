@@ -16,6 +16,7 @@ export function TutorialProgress({ steps }: TutorialProgressProps) {
   const stepElementsRef = useRef<Map<string, HTMLElement>>(new Map());
 
   useEffect(() => {
+    const isMobile = window.innerWidth < 768;
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -25,7 +26,7 @@ export function TutorialProgress({ steps }: TutorialProgressProps) {
         });
       },
       {
-        rootMargin: '-100px 0px -66% 0px',
+        rootMargin: isMobile ? '-80px 0px -50% 0px' : '-100px 0px -66% 0px',
         threshold: 0,
       }
     );
